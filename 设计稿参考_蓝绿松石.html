@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>蓝绿松石 v2（第三轮）— 社系毕业歌会解密 视觉预览</title>
+<style>
+  /* ============ 蓝绿松石 v2（第三轮 · 调协调度）============
+     保留松石青主色；把原来的互补橙换成「克制暖铜」做唯一焦点，
+     冷青绿同类色 + 单一暖金属 = 更协调；背景更安静。
+     新增：回声「纸团展开/揉皱」动效、赛博礼物烟花。假数据，未连后端。 ========== */
+  :root{
+    --bg:#eef4f1; --bg-2:#e3eeea; --card:#ffffff;
+    --ink:#163029; --ink-soft:#4f665f; --ink-faint:#90a59e;
+    --teal:#138a7d; --teal-2:#0e6f64; --teal-deep:#0b524a; --teal-soft:#d8ece8; --teal-grad:linear-gradient(135deg,#19a394,#0e7468);
+    --brass:#c79a52; --brass-2:#a87f3c; --brass-soft:#ecd9ad;   /* 唯一暖色焦点 */
+    --mute:#93b3ac;                                              /* 柔青灰中性 */
+    --err:#c25b43;                                              /* 仅错误态使用 */
+    --line:#dce8e3;
+    --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{font-family:var(--sans);color:var(--ink);
+    background:radial-gradient(110% 60% at 88% -6%,rgba(19,138,125,.09),transparent 55%),radial-gradient(80% 50% at 0% 6%,rgba(199,154,82,.06),transparent 50%),var(--bg);
+    background-attachment:fixed;-webkit-font-smoothing:antialiased;padding-bottom:80px;}
+
+  .masthead{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:54px 28px 16px;}
+  .kicker{font-family:var(--serif);letter-spacing:.42em;color:var(--teal-2);font-size:13px;margin:0 0 14px;text-indent:.42em;}
+  .m-title{font-family:var(--serif);font-size:clamp(34px,6vw,58px);font-weight:600;margin:0;line-height:1.05;color:var(--teal-deep);}
+  .m-title small{display:block;font-size:15px;letter-spacing:.3em;color:var(--ink-soft);font-weight:400;margin-top:15px;text-indent:.3em;}
+  .m-desc{max-width:710px;color:var(--ink-soft);line-height:1.9;margin:20px 0 0;font-size:14.5px;}
+  .tags{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+  .tags span{font-family:var(--serif);font-size:12.5px;color:var(--ink-soft);border:1px solid var(--line);background:#fff;padding:5px 13px;border-radius:999px;}
+  .m-note{margin-top:16px;font-size:12px;color:var(--ink-faint);}
+
+  .indexbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(8px);background:rgba(238,244,241,.86);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:28px;}
+  .indexbar .inner{max-width:1240px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:11px 24px;}
+  .indexbar a{flex:none;font-size:12.5px;color:var(--ink-soft);text-decoration:none;padding:6px 13px;border-radius:999px;transition:.18s;white-space:nowrap;}
+  .indexbar a:hover{color:#fff;background:var(--teal-2);}
+
+  .deck{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:40px 24px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:46px 38px;}
+  .frame{scroll-margin-top:70px;}
+  .frame-label{font-family:var(--serif);font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:9px;color:var(--teal-deep);}
+  .frame-label b{font-size:12.5px;color:#fff;background:var(--teal-2);width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:600;flex:none;}
+  .frame-label .new{font-size:10px;color:#fff;background:var(--brass-2);border-radius:99px;padding:2px 8px;}
+  .frame-sub{font-size:12px;color:var(--ink-faint);margin:0 0 14px 33px;}
+
+  .phone{position:relative;width:100%;max-width:362px;margin:0 auto;background:#0b211e;border-radius:42px;padding:11px;box-shadow:0 26px 54px -26px rgba(11,82,74,.5),0 0 0 1.5px rgba(199,154,82,.26) inset;}
+  .phone::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:94px;height:7px;border-radius:5px;background:#061311;z-index:9;}
+  .screen{position:relative;height:756px;overflow-y:auto;border-radius:32px;background:var(--bg);scrollbar-width:thin;scrollbar-color:var(--line) transparent;}
+  .screen::-webkit-scrollbar{width:7px;}
+  .screen::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;}
+  .tailspace{height:22px;}
+
+  .appbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;padding:15px 20px 12px;background:rgba(238,244,241,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  .brand{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--teal-deep);}
+  .brand small{display:block;font-size:10.5px;letter-spacing:.22em;color:var(--teal-2);font-weight:400;margin-top:2px;}
+  .appbar .dot{width:9px;height:9px;border-radius:50%;background:var(--brass);box-shadow:0 0 0 4px rgba(199,154,82,.18);}
+
+  .pad{padding:20px;} .pad-lg{padding:24px 20px 30px;}
+  .eyebrow{font-family:var(--serif);letter-spacing:.32em;font-size:11px;color:var(--teal-2);margin:0 0 9px;text-indent:.32em;}
+  h1.big{font-family:var(--serif);font-size:25px;line-height:1.32;margin:0 0 12px;font-weight:600;color:var(--teal-deep);}
+  .lede{color:var(--ink-soft);line-height:1.85;font-size:13.5px;margin:0;}
+  .poem{font-family:var(--serif);font-size:16px;line-height:2.05;color:var(--ink);margin:0;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--sans);font-size:14.5px;font-weight:600;border:none;cursor:pointer;padding:13px 20px;border-radius:12px;width:100%;background:var(--teal-grad);color:#fff;box-shadow:0 12px 22px -12px rgba(14,111,100,.7);transition:transform .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn[disabled]{background:#9fb8b2;box-shadow:none;cursor:not-allowed;opacity:.9;}
+  .btn.ghost{background:transparent;color:var(--teal-2);border:1.5px solid var(--teal-2);box-shadow:none;}
+  .btn.gold{background:linear-gradient(135deg,#d2a85e,#a87f3c);color:#2c2208;}
+  .btn.line{background:transparent;color:var(--teal-2);border:1.5px solid var(--teal-2);box-shadow:none;}
+  .btn-row{display:flex;flex-direction:column;gap:11px;margin-top:18px;}
+
+  .field{margin-top:14px;}
+  .field label{display:block;font-size:12px;color:var(--ink-soft);margin:0 0 6px;}
+  .input{width:100%;border:1.5px solid var(--line);background:#fbfdfc;border-radius:11px;padding:13px 15px;font-size:15px;font-family:var(--sans);color:var(--ink);}
+  .input::placeholder{color:#a7bcb5;}
+  .input:focus{outline:none;border-color:var(--teal);}
+  .input.err{border-color:var(--err);background:rgba(194,91,67,.05);}
+
+  .seal{display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);color:#fff;background:var(--teal-grad);border-radius:9px;font-weight:600;box-shadow:0 5px 12px -4px rgba(14,111,100,.6);}
+  .seal-lg{width:62px;height:62px;font-size:34px;border:2px solid rgba(255,255,255,.3);}
+
+  .progress-card{margin:16px 20px 0;background:linear-gradient(135deg,var(--teal-deep),#0a443d);border-radius:16px;padding:16px 17px;color:#d6ece7;box-shadow:0 16px 32px -22px rgba(11,82,74,.6);}
+  .pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .pc-top h3{font-family:var(--serif);font-size:14px;margin:0;font-weight:600;color:#fff;}
+  .pc-top span{font-size:11px;color:#86bcb2;}
+  .bar{height:8px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#37cdbb,#19a394);}
+  .pc-stat{display:flex;gap:16px;margin-top:11px;font-size:12px;color:#a4cdc6;}
+  .pc-stat b{color:#fff;}
+  .cool{font-size:11px;color:#82b2a9;margin:11px 0 0;line-height:1.6;}
+  .cool.active{color:#f0c6b8;}
+
+  .qcard{margin:18px 20px 0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 16px 34px -28px rgba(11,82,74,.4);}
+  .qcard.err{border-color:rgba(194,91,67,.4);animation:shake .5s ease both;}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(2px);}}
+  .qhead{display:flex;align-items:center;justify-content:space-between;padding:14px 17px 12px;border-bottom:1px solid var(--line);}
+  .qhead .qid{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--teal-deep);}
+  .qhead .qid em{font-style:normal;color:var(--ink-faint);font-size:12px;margin-left:7px;}
+  .tag{font-size:11px;padding:4px 11px;border-radius:99px;font-weight:600;}
+  .tag.main{background:var(--teal-soft);color:var(--teal-2);}
+  .tag.bonus{background:rgba(147,179,172,.22);color:#5f7d75;}
+  .qbody{padding:16px 17px;}
+
+  figure.shot{margin:15px 0 0;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000;}
+  figure.shot img{display:block;width:100%;height:170px;object-fit:cover;}
+  figure.shot figcaption{font-size:11px;color:var(--ink-faint);background:#f6faf8;padding:8px 12px;}
+
+  .msg{margin-top:13px;font-size:12.5px;padding:10px 13px;border-radius:10px;line-height:1.55;}
+  .msg.err{background:rgba(194,91,67,.08);color:#a8472f;border:1px solid rgba(194,91,67,.22);}
+  .rescue{margin-top:13px;border:1px dashed var(--brass);border-radius:11px;background:rgba(199,154,82,.09);padding:12px 14px;animation:fadein .4s ease both;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .rescue h4{margin:0 0 8px;font-size:12px;color:var(--brass-2);font-family:var(--serif);letter-spacing:.1em;}
+  .rescue .ri{margin:6px 0;}
+  .rescue .ri b{display:block;font-size:11.5px;color:var(--ink);margin-bottom:2px;}
+  .rescue .ri p{margin:0;font-size:12.5px;color:var(--ink-soft);line-height:1.55;}
+
+  /* ===== 回声「纸团展开 / 揉成一团」动效 ===== */
+  .echo-screen{background:radial-gradient(80% 60% at 50% 36%,rgba(19,138,125,.16),transparent 70%),#0c1f1c;display:flex;flex-direction:column;}
+  .echo-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .echo-paper{position:relative;margin:0 18px;width:100%;max-width:300px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 22px 22px;box-shadow:0 30px 60px -22px rgba(0,0,0,.55);transform-origin:50% 50%;}
+  .echo-paper .wrinkle{position:absolute;inset:0;border-radius:inherit;pointer-events:none;mix-blend-mode:multiply;opacity:.1;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.014 0.02' numOctaves='3' seed='7'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23w)'/></svg>");
+    background-size:cover;filter:url(#paperCrease);}
+  .echo-content{position:relative;z-index:1;}
+  .echo-stage.unfolding .echo-paper{animation:paperUnfold .9s cubic-bezier(.2,.8,.25,1) both;}
+  .echo-stage.unfolding .wrinkle{animation:wrinkleSmooth .9s ease both;}
+  .echo-stage.crumpling .echo-paper{animation:paperCrumple .72s cubic-bezier(.5,0,.7,.3) forwards;}
+  .echo-stage.crumpling .wrinkle{animation:wrinkleUp .72s ease forwards;}
+  .echo-stage.gone .echo-paper{opacity:0;transform:scale(.12) rotate(-28deg) translateY(10px);pointer-events:none;}
+  @keyframes paperUnfold{
+    0%{opacity:0;transform:scale(.18) rotate(-24deg);border-radius:50%;}
+    35%{opacity:1;transform:scale(.52) rotate(8deg);border-radius:42% 32% 46% 34%;}
+    62%{transform:scale(1.04) rotate(-3deg);border-radius:22px;}
+    82%{transform:scale(.99) rotate(1deg);border-radius:15px;}
+    100%{opacity:1;transform:scale(1) rotate(0);border-radius:16px;}
+  }
+  @keyframes paperCrumple{
+    0%{opacity:1;transform:scale(1) rotate(0);border-radius:16px;}
+    45%{opacity:1;transform:scale(.6) rotate(10deg);border-radius:44% 32% 48% 30%;}
+    80%{opacity:.85;transform:scale(.26) rotate(-16deg);border-radius:50%;}
+    100%{opacity:0;transform:scale(.12) rotate(-28deg) translateY(10px);border-radius:50%;}
+  }
+  @keyframes wrinkleSmooth{0%{opacity:.85;filter:url(#paperCrease) contrast(1.9);}100%{opacity:.1;filter:url(#paperCrease) contrast(1);}}
+  @keyframes wrinkleUp{0%{opacity:.1;}100%{opacity:.95;filter:url(#paperCrease) contrast(2);}}
+  .echo-paper .cap{text-align:center;font-size:12px;letter-spacing:.3em;color:var(--teal-2);font-family:var(--serif);text-indent:.3em;}
+  .stamp-wrap{display:flex;justify-content:center;margin:16px 0 18px;}
+  .echo-stage.unfolding .stamp-wrap .seal-lg{animation:press .7s cubic-bezier(.2,.7,.2,1.3) .35s both;}
+  @keyframes press{0%{opacity:0;transform:scale(1.8) rotate(-7deg);}60%{opacity:1;transform:scale(.92) rotate(2deg);}100%{transform:scale(1);}}
+  .echo-text{font-family:var(--serif);font-size:16px;line-height:2;text-align:center;}
+  .echo-text strong{color:var(--teal-2);font-weight:700;font-size:19px;}
+  .pop-note{text-align:center;font-size:11.5px;color:var(--ink-faint);margin:16px 0 18px;font-family:var(--serif);}
+  .echo-gone-note{position:absolute;color:var(--brass-soft);font-size:13px;font-family:var(--serif);opacity:0;transition:opacity .4s .25s;}
+  .echo-stage.gone .echo-gone-note{opacity:1;}
+
+  .fold{margin:18px 20px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .fold-head{width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:none;cursor:pointer;padding:14px 16px;font-family:var(--serif);font-size:14.5px;color:var(--teal-deep);}
+  .fold-head .n{font-size:11px;color:#fff;background:var(--teal-2);border-radius:99px;padding:2px 9px;margin-left:7px;}
+  .fold-head .chev{color:var(--ink-faint);transition:transform .4s;font-size:13px;}
+  .fold.open .fold-head .chev{transform:rotate(180deg);}
+  .fold-body{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .35s ease;}
+  .fold.open .fold-body{max-height:1600px;opacity:1;}
+  .fold-inner{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;}
+  .echo-tile{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;}
+  .echo-tile .mini{flex:none;width:36px;height:36px;border-radius:8px;font-size:20px;}
+  .echo-tile .eh{font-size:11px;color:var(--ink-faint);margin:0 0 4px;font-family:var(--serif);}
+  .echo-tile .et{font-family:var(--serif);font-size:12.5px;line-height:1.7;color:var(--ink-soft);margin:0;}
+  .echo-tile .et strong{color:var(--teal-2);}
+  .fold-hint{font-size:11px;color:var(--ink-faint);margin:9px 20px 0;text-align:center;}
+
+  .choice{margin:22px 20px 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 20px;}
+  .choice .seal-lg{margin:0 auto 16px;}
+  .choice h2{font-family:var(--serif);font-size:21px;margin:0 0 10px;font-weight:600;color:var(--teal-deep);}
+  .choice p{color:var(--ink-soft);line-height:1.85;font-size:13px;margin:0;}
+
+  .branch{margin:16px 20px 0;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brass);border-radius:0 14px 14px 0;padding:15px 17px;}
+  .branch .bh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .branch .bh b{font-family:var(--serif);font-size:15px;color:var(--teal-deep);}
+  .branch .meta{font-size:11px;color:var(--ink-faint);margin-bottom:9px;}
+  .branch .meta span{background:rgba(147,179,172,.18);padding:3px 9px;border-radius:99px;margin-right:6px;}
+  .branch p{margin:0 0 4px;font-size:12.5px;line-height:1.7;color:var(--ink-soft);}
+
+  .final-band{padding:22px 20px;background:linear-gradient(180deg,#0c453f,#082e2a);color:#dfeee9;}
+  .final-band .eyebrow{color:var(--brass-soft);}
+  .final-band h1.big{color:#f0f6f3;}
+  .final-band .poem{color:#bfddd6;font-size:15px;}
+  .score-fold{margin:16px 20px 0;border:1px solid var(--line);border-radius:13px;background:var(--card);overflow:hidden;}
+  .score-fold>summary{cursor:pointer;font-family:var(--serif);font-size:13.5px;padding:13px 16px;color:var(--teal-2);list-style:none;display:flex;justify-content:space-between;}
+  .score-fold>summary::-webkit-details-marker{display:none;}
+  .score-fold>summary::after{content:"展开 ﹀";font-size:11px;color:var(--ink-faint);}
+  .score-fold[open]>summary::after{content:"收起 ﹀";}
+  .score-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:0 12px 14px;}
+  .score-grid img{width:100%;height:96px;object-fit:cover;border-radius:7px;border:1px solid var(--line);}
+  .final-q{margin:16px 20px 0;}
+
+  .lottery{margin:18px 20px 0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;}
+  .lottery h2{font-family:var(--serif);font-size:18px;margin:0 0 4px;color:var(--teal-deep);}
+  .lottery .sub{font-size:11.5px;color:var(--ink-faint);margin:0 0 16px;}
+  .wheel-wrap{position:relative;width:196px;height:196px;margin:0 auto;}
+  .wheel-pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:18px solid var(--teal-deep);z-index:4;}
+  .wheel{width:196px;height:196px;border-radius:50%;border:6px solid var(--card);box-shadow:0 12px 26px -14px rgba(11,82,74,.5),0 0 0 2px var(--line);animation:spin 5s cubic-bezier(.12,.7,.12,1) .4s both;}
+  @keyframes spin{from{transform:rotate(0);}to{transform:rotate(1822deg);}}
+  .wheel-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:var(--card);border:2px solid var(--brass);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px;color:var(--teal-2);z-index:3;}
+  .legend{display:flex;gap:14px;justify-content:center;margin:16px 0 0;font-size:11.5px;color:var(--ink-soft);}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+
+  .stub{margin:18px 20px 0;position:relative;background:linear-gradient(135deg,#0c453f,#08332e);border:1.5px solid var(--brass);border-radius:14px;padding:20px;color:#fff;}
+  .stub::before,.stub::after{content:"";position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--bg);transform:translateY(-50%);}
+  .stub::before{left:-9px;} .stub::after{right:-9px;}
+  .stub .lab{font-size:11px;letter-spacing:.3em;color:var(--brass-soft);text-align:center;margin:0 0 8px;font-family:var(--serif);}
+  .stub .code{font-family:ui-monospace,Menlo,monospace;font-size:26px;letter-spacing:.14em;text-align:center;color:#fff;font-weight:700;}
+  .stub .aw{text-align:center;font-family:var(--serif);font-size:14px;margin:11px 0 4px;color:#cfeae3;}
+  .stub .tip{text-align:center;font-size:11px;color:#7fb3aa;margin:6px 0 0;}
+
+  /* 赛博礼物 + 烟花 */
+  .cg-screen{background:#0a201d;display:flex;flex-direction:column;}
+  .cg-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .cg-back{position:absolute;inset:0;background:radial-gradient(70% 50% at 50% 40%,rgba(19,138,125,.2),transparent 70%),#08201d;}
+  .fw-layer{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+  .fw-dot{position:absolute;width:7px;height:7px;border-radius:50%;color:#37cdbb;background:currentColor;box-shadow:0 0 7px currentColor;transform:translate(-50%,-50%);will-change:transform,opacity;animation:fwfly 1.15s ease-out forwards;}
+  @keyframes fwfly{0%{transform:translate(-50%,-50%) scale(1);opacity:1;}15%{opacity:1;}100%{transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(.25);opacity:0;}}
+  .cg-card{position:relative;z-index:2;margin:0 18px;background:var(--card);border:1px solid var(--brass);border-radius:22px;padding:26px 22px 22px;text-align:center;box-shadow:0 30px 64px -22px rgba(0,0,0,.65);}
+  .cg-stage.entering .cg-card{animation:cgIn .6s cubic-bezier(.2,.9,.3,1.3) both;}
+  .cg-stage.leaving .cg-card{animation:cgOut .55s cubic-bezier(.5,0,.7,.2) both;}
+  .cg-stage.left .cg-card{opacity:0;transform:scale(.8);pointer-events:none;}
+  @keyframes cgIn{0%{opacity:0;transform:translateY(26px) scale(.86);}100%{opacity:1;transform:none;}}
+  @keyframes cgOut{0%{opacity:1;transform:none;}100%{opacity:0;transform:translateY(-16px) scale(.9);}}
+  .cg-badge{display:inline-block;font-size:11px;letter-spacing:.28em;color:#fff;background:var(--teal-grad);border-radius:99px;padding:4px 13px;text-indent:.28em;font-family:var(--serif);}
+  .cg-card h2{font-family:var(--serif);font-size:21px;margin:16px 0 10px;color:var(--teal-deep);}
+  .cg-card p{font-size:13px;line-height:1.85;color:var(--ink-soft);margin:0 0 18px;}
+  .cg-left-note{position:absolute;z-index:2;text-align:center;color:var(--brass-soft);font-size:12.5px;font-family:var(--serif);opacity:0;transition:opacity .4s .35s;}
+  .cg-stage.left .cg-left-note{opacity:1;}
+  .cg-bar{display:flex;gap:9px;padding:13px 18px;background:#061814;border-top:1px solid rgba(199,154,82,.25);}
+  .cg-bar button{flex:1;font-family:var(--sans);font-size:12.5px;font-weight:600;padding:11px;border-radius:10px;cursor:pointer;border:1px solid rgba(199,154,82,.4);background:transparent;color:var(--brass-soft);transition:.15s;}
+  .cg-bar button:hover{background:rgba(199,154,82,.14);}
+
+  .admin-screen{background:#e3eeea;}
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:16px 20px 0;}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 11px;text-align:center;}
+  .metric .mn{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--teal-2);line-height:1;}
+  .metric .ml{font-size:10.5px;color:var(--ink-faint);margin-top:6px;}
+  .admin-card{margin:16px 20px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .admin-card h3{font-family:var(--serif);font-size:14px;margin:0 0 12px;color:var(--teal-deep);}
+  .award-box{background:rgba(19,138,125,.05);border:1px solid rgba(19,138,125,.18);border-radius:10px;padding:13px 14px;margin-top:13px;font-size:12.5px;line-height:1.9;color:var(--ink-soft);}
+  .award-box b{color:var(--ink);}
+  .award-box .lvl{display:inline-block;margin-top:4px;background:var(--teal-grad);color:#fff;font-family:var(--serif);padding:3px 11px;border-radius:99px;font-size:12px;}
+  table.mini{width:100%;border-collapse:collapse;margin-top:12px;font-size:11.5px;}
+  table.mini th{text-align:left;color:var(--ink-faint);font-weight:600;padding:7px 8px;border-bottom:1.5px solid var(--line);}
+  table.mini td{padding:8px;border-bottom:1px solid var(--line);color:var(--ink-soft);}
+  table.mini tr:last-child td{border-bottom:none;}
+  .ok{color:var(--teal-2);font-weight:600;} .wait{color:var(--brass-2);font-weight:600;}
+
+  .foot{position:relative;z-index:1;text-align:center;color:var(--ink-faint);font-size:11.5px;margin-top:50px;padding:0 24px;line-height:1.8;}
+  @media(max-width:760px){.deck{grid-template-columns:1fr;gap:38px;padding:30px 16px 0;}.score-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <filter id="paperCrease"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter>
+  </defs></svg>
+
+  <header class="masthead">
+    <p class="kicker">第 三 轮 · 调 协 调 度</p>
+    <h1 class="m-title">蓝绿松石 v2<small>社系毕业歌会解密 · 视觉预览（配色优化）</small></h1>
+    <p class="m-desc">保留你喜欢的松石青主色，针对「配色不够协调」做调整：去掉原来对冲的互补橙，改用一抹克制暖铜作唯一焦点（一等奖、转盘中心、票根边）。冷青绿同类色统一画面，单一暖金属点睛，背景更安静。并加入与其他方案一致的纸团展开/揉皱回声动效与赛博礼物烟花。纯静态预览，假数据，未连后端。</p>
+    <div class="tags"><span>松石青 主色（保留）</span><span>暖铜 唯一焦点</span><span>去互补橙</span><span>纸团展开/揉皱</span><span>烟花</span></div>
+    <p class="m-note">手机框画廊按真实流程排布 11 屏。第 4 屏「回声」与第 10 屏「赛博礼物」可点击下方按钮实时重播动效。</p>
+  </header>
+
+  <nav class="indexbar"><div class="inner">
+    <a href="#s1">1 登录</a><a href="#s2">2 答题</a><a href="#s3">3 答错·冷却</a>
+    <a href="#s4">4 回声·纸团动效</a><a href="#s5">5 百宝箱·动效</a><a href="#s6">6 主线完成</a>
+    <a href="#s7">7 旁枝</a><a href="#s8">8 终章·简谱</a><a href="#s9">9 抽奖兑奖</a>
+    <a href="#s10">10 赛博礼物·烟花</a><a href="#s11">11 后台核销</a>
+  </div></nav>
+
+  <main class="deck">
+
+    <!-- 1 登录 -->
+    <section class="frame" id="s1">
+      <p class="frame-label"><b>1</b>登录页</p>
+      <p class="frame-sub">学号 + 手机号开启这一程</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">社系毕业歌会解密<small>理 科 五 号 楼</small></div><span class="dot"></span></div>
+        <div class="pad-lg">
+          <p class="eyebrow">入 园</p>
+          <h1 class="big">用学号和手机号<br/>开启这一程</h1>
+          <p class="lede">26 届毕业生可以获得礼物，但游戏对所有人开放。每个学号需绑定一个手机号；刷新或重新打开时会回到当前进度。</p>
+          <div class="field"><label>学号</label><input class="input" value="2201110716"></div>
+          <div class="field"><label>手机号</label><input class="input" value="138 0000 6027"></div>
+          <div class="btn-row"><button class="btn">进入活动</button></div>
+          <p class="cool" style="text-align:center;color:var(--ink-faint);margin-top:22px">题目基于楼内固定信息，全程由网页自动判题。</p>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- 2 答题 -->
+    <section class="frame" id="s2">
+      <p class="frame-label"><b>2</b>主线答题卡 · A2</p>
+      <p class="frame-sub">进度 + 题面 + 附图 + 提交</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">沿着楼的线索前进<small>主 线 阶 段</small></div><span class="dot"></span></div>
+        <div class="progress-card">
+          <div class="pc-top"><h3>当前进度</h3><span>学号 2201110716</span></div>
+          <div class="bar"><i style="width:17%"></i></div>
+          <div class="pc-stat"><span>主线 <b>1</b>/6</span><span>旁枝 <b>0</b>/3</span></div>
+          <p class="cool">任一题答错后，终止答题 15s；其他题也需等倒计时结束后再提交。</p>
+        </div>
+        <div class="qcard">
+          <div class="qhead"><div class="qid">A2<em>一层走廊</em></div><span class="tag main">主线</span></div>
+          <div class="qbody">
+            <p class="poem">先从飞舟老师信箱里借一个门牌号。找到那扇门后，面对房门，门右侧有一块带有红与灰的方形守夜人，请读出它属于第几个巡查点。</p>
+            <figure class="shot"><img src="../../../static/assets/a2-zhou-feizhou-mailbox.jpg" alt="周飞舟老师信箱"><figcaption>周飞舟老师信箱 · 点击查看大图</figcaption></figure>
+            <div class="field"><input class="input" placeholder="答案格式：1 位数字"></div>
+            <div class="btn-row"><button class="btn">提交</button></div>
+          </div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 3 答错·冷却 -->
+    <section class="frame" id="s3">
+      <p class="frame-label"><b>3</b>提交错误 · 冷却 <span class="new">新增</span></p>
+      <p class="frame-sub">错误提示 + 15s 冷却倒计时 + 救援提示展开</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">沿着楼的线索前进<small>主 线 阶 段</small></div><span class="dot" style="background:var(--err)"></span></div>
+        <div class="progress-card">
+          <div class="pc-top"><h3>当前进度</h3><span>学号 2201110716</span></div>
+          <div class="bar"><i style="width:17%"></i></div>
+          <div class="pc-stat"><span>主线 <b>1</b>/6</span><span>旁枝 <b>0</b>/3</span></div>
+          <p class="cool active">任一题答错后，终止答题 15s；其他题也需等倒计时结束后再提交，还剩 12 秒。</p>
+        </div>
+        <div class="qcard err">
+          <div class="qhead"><div class="qid">A2<em>一层走廊</em></div><span class="tag main">主线</span></div>
+          <div class="qbody">
+            <p class="poem">先从飞舟老师信箱里借一个门牌号。找到那扇门后，面对房门，门右侧有一块带有红与灰的方形守夜人，请读出它属于第几个巡查点。</p>
+            <div class="field"><input class="input err" value="7"></div>
+            <div class="btn-row"><button class="btn" disabled>终止答题 12 秒</button></div>
+            <div class="msg err">还没有对上，救援提示已展开。</div>
+            <div class="rescue">
+              <h4>救 援 提 示</h4>
+              <div class="ri"><b>观察范围</b><p>先确认信箱编号对应的门牌，再站到那扇门前。</p></div>
+              <div class="ri"><b>操作翻译</b><p>面对房门，看门右侧红灰色方形固定物，提交巡查点编号。</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 4 回声·纸团动效 -->
+    <section class="frame" id="s4">
+      <p class="frame-label"><b>4</b>毕业回声 · 纸团展开/揉皱 <span class="new">动效</span></p>
+      <p class="frame-sub">出现＝纸团展开；收起＝揉成一团抛走（可点击重播）</p>
+      <div class="phone"><div class="screen echo-screen">
+        <div class="echo-stage unfolding" id="echo1">
+          <div class="echo-paper">
+            <div class="wrinkle"></div>
+            <div class="echo-content">
+              <p class="cap">收 到 一 条 回 声</p>
+              <div class="stamp-wrap"><span class="seal seal-lg">社</span></div>
+              <p class="echo-text">初入燕园，你在千万声音中认出反复写下的 <strong>社</strong> 字。它像一枚小小的印章，盖在一切的开始。</p>
+              <p class="pop-note">纸团慢慢展开，楼里的声音浮了出来。</p>
+              <button class="btn" onclick="paperCrumple('echo1')">收入百宝箱</button>
+            </div>
+          </div>
+          <div class="echo-gone-note">已收入百宝箱 ✦</div>
+        </div>
+        <div class="cg-bar">
+          <button onclick="paperUnfold('echo1')">▷ 重播「纸团展开」</button>
+          <button onclick="paperCrumple('echo1')">▷ 播放「揉成一团」</button>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- 5 百宝箱·动效 -->
+    <section class="frame" id="s5">
+      <p class="frame-label"><b>5</b>回声百宝箱 · 展开/收起 <span class="new">动效</span></p>
+      <p class="frame-sub">点标题栏可实时展开/收起（带高度过渡）</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">回声百宝箱<small>收 藏 的 声 音</small></div><span class="dot"></span></div>
+        <div class="fold open">
+          <button class="fold-head" onclick="toggleFold(this)"><span>主线百宝箱<span class="n">6</span></span><span class="chev">﹀</span></button>
+          <div class="fold-body"><div class="fold-inner">
+            <div class="echo-tile"><span class="seal mini">社</span><div><p class="eh">A1 · 一层导视牌</p><p class="et">初入燕园，你在千万声音中认出反复写下的 <strong>社</strong> 字。它像一枚小小的印章，盖在一切的开始。</p></div></div>
+            <div class="echo-tile"><span class="seal mini">右</span><div><p class="eh">A2 · 一层走廊</p><p class="et">你从信箱走到门牌，又看向房间 <strong>右</strong> 侧那位沉默的守夜人。这一路很长，但每个细节都值得回望。</p></div></div>
+            <div class="echo-tile"><span class="seal mini">行</span><div><p class="eh">A3 · 拾级而上</p><p class="et">你一级一级往上走，把脚下的提醒变成继续前 <strong>行</strong> 的坐标。许多路也只是这样，从无到有地走来。</p></div></div>
+            <div class="echo-tile"><span class="seal mini">二</span><div><p class="eh">A4 · 二层走廊</p><p class="et">你在 <strong>二</strong> 层走廊停下脚步，对田野与课堂都露出会心一笑。</p></div></div>
+            <div class="echo-tile"><span class="seal mini">三</span><div><p class="eh">A5 · 中庭</p><p class="et">你在中庭抬头，眼底掠过许多窗口、外机和光影。第 <strong>三</strong> 次回望时，也许会发现这栋楼也有自己的呼吸。</p></div></div>
+            <div class="echo-tile"><span class="seal mini">一</span><div><p class="eh">A6 · 你的名字</p><p class="et">你终于找到那尊安静而屹立的身影，也收下那 <strong>一</strong> 份带着清香的祝福。愿离开这里的人，都有顺风与远方。</p></div></div>
+          </div></div>
+        </div>
+        <p class="fold-hint">▲ 点上面这一栏试试展开 / 收起的动效</p>
+        <div class="fold">
+          <button class="fold-head" onclick="toggleFold(this)"><span>旁枝百宝箱<span class="n" style="background:var(--mute)">1</span></span><span class="chev">﹀</span></button>
+          <div class="fold-body"><div class="fold-inner">
+            <div class="echo-tile" style="border-left:3px solid var(--mute)"><span class="seal mini" style="background:linear-gradient(135deg,#5aa79a,#3c8175)">枝</span><div><p class="eh">B1 · 203 教室</p><p class="et">在 203 的桌角与书页之间，你让一只蓝边鼠标接上了理论的回响。社会学的想象力，也成了相伴一生的礼物。</p></div></div>
+          </div></div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 6 主线完成 -->
+    <section class="frame" id="s6">
+      <p class="frame-label"><b>6</b>主线完成 · 选择</p>
+      <p class="frame-sub">开启终章 / 先探索旁枝</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">六段回声已经集齐<small>主 线 完 成</small></div><span class="dot"></span></div>
+        <div class="choice">
+          <span class="seal seal-lg">毕</span>
+          <h2>恭喜你集齐<br/>六段毕业回声</h2>
+          <p>你可以在完成终章后领取纪念奖。现在可以直接开启终章，也可以先探索三条旁枝路线——每完成一道旁枝题，多一次抽奖机会。开启终章后，旁枝将无法再体验。</p>
+          <div class="btn-row"><button class="btn">现在开启终章</button><button class="btn line">先探索旁枝路线</button></div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 7 旁枝 -->
+    <section class="frame" id="s7">
+      <p class="frame-label"><b>7</b>旁枝路线</p>
+      <p class="frame-sub">B1 / B2 / B3 三条支线</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">旁枝仍有回声<small>选 做 · 抽 奖 机 会</small></div><span class="dot"></span></div>
+        <div class="pad"><p class="lede">旁枝题一次开放，可任选完成。每完成一道，多一次抽奖机会。若歌声已在心里响起，也可随时收束旁枝、开启终章。</p></div>
+        <div class="branch">
+          <div class="bh"><b>B1 · 一间教室</b><span class="tag bonus">难度 中</span></div>
+          <div class="meta"><span>203 教室</span></div>
+          <p>在 203 电脑桌上找到唯一一只 logitech 蓝边鼠标，记下大写字母 M 身后的密码，再到桌下《西方社会学理论》对应页找出现频率最高的社会学家。</p>
+          <div class="field"><input class="input" placeholder="答案格式：3 个汉字"></div>
+        </div>
+        <div class="branch">
+          <div class="bh"><b>B2 · 理五折叠</b><span class="tag bonus">难度 较高</span></div>
+          <div class="meta"><span>一楼到二楼楼梯间</span></div>
+          <p>在电梯旁楼梯间的固定贴牌中找出被大写的字母，补全缺失字母及其字母表序号，得到 8 个数字，再回到那段毕业小景里逐字取字。</p>
+          <div class="field"><input class="input" placeholder="答案格式：8 个汉字"></div>
+        </div>
+        <div class="branch">
+          <div class="bh"><b>B3 · 立体空间</b><span class="tag bonus">难度 较高</span></div>
+          <div class="meta"><span>一层与二层门牌</span></div>
+          <p>先找一层门牌名正好 7 个汉字的房间，记下房号 abc，按 b-a、a、c 变换出新房号，再到对应门口读取那幅书法。</p>
+          <div class="field"><input class="input" placeholder="答案格式：8 个简体汉字"></div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 8 终章·简谱 -->
+    <section class="frame" id="s8">
+      <p class="frame-label"><b>8</b>终章 · 行行重行行</p>
+      <p class="frame-sub">诗性题面 + 简谱折叠（5 页）+ 答题</p>
+      <div class="phone"><div class="screen">
+        <div class="final-band">
+          <p class="eyebrow">终 章 · 行 行 重 行 行</p>
+          <h1 class="big">一路的念念不忘<br/>终会得到回响</h1>
+          <p class="poem">打开主线百宝箱，六段回声里各有一个被加重的字；数清它们的笔画，让数字由高到低排成一行。再翻开《行行重行行》，到男低音的声部里寻找同样的起伏。仅仅看数字，在熟悉的旋律里，也能找出那句萦绕心底的歌词。</p>
+        </div>
+        <details class="score-fold" open>
+          <summary>《行行重行行》简谱（5 页）</summary>
+          <div class="score-grid">
+            <img src="../../../static/assets/shexi-score-page-1.png" alt="简谱第1页">
+            <img src="../../../static/assets/shexi-score-page-2.png" alt="简谱第2页">
+            <img src="../../../static/assets/shexi-score-page-3.png" alt="简谱第3页">
+            <img src="../../../static/assets/shexi-score-page-4.png" alt="简谱第4页">
+            <img src="../../../static/assets/shexi-score-page-5.png" alt="简谱第5页">
+          </div>
+        </details>
+        <div class="final-q">
+          <div class="field"><label>仅看数字，在熟悉的旋律里找出那句歌词</label><input class="input" placeholder="答案格式：7 个汉字"></div>
+          <div class="btn-row"><button class="btn gold">提交终章答案</button></div>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 9 抽奖兑奖 -->
+    <section class="frame" id="s9">
+      <p class="frame-label"><b>9</b>抽奖转盘 · 完成兑奖</p>
+      <p class="frame-sub">转盘 + 票根式兑奖码</p>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><div class="brand">且行且歌共少年<small>终 章 完 成</small></div><span class="dot"></span></div>
+        <div class="pad" style="padding-bottom:2px"><p class="poem" style="font-size:14px">念百年，筚路蓝缕志弥坚；愿今生，且行且歌共少年 🎵<br/>一路且行且歌，不觉已行至一程终点。恭喜你顺利通关。</p></div>
+        <div class="lottery">
+          <h2>抽奖转盘</h2>
+          <p class="sub">抽奖进度 1/3 · 剩余 2 次</p>
+          <div class="wheel-wrap">
+            <div class="wheel-pointer"></div>
+            <div class="wheel" style="background:conic-gradient(var(--mute) 0 40deg,var(--teal) 40deg 80deg,var(--mute) 80deg 120deg,var(--brass) 120deg 160deg,var(--mute) 160deg 200deg,var(--teal) 200deg 240deg,var(--mute) 240deg 280deg,var(--brass) 280deg 320deg,var(--mute) 320deg 360deg);"></div>
+            <div class="wheel-center">抽</div>
+          </div>
+          <div class="legend"><span><i style="background:var(--brass)"></i>一等奖</span><span><i style="background:var(--teal)"></i>二等奖</span><span><i style="background:var(--mute)"></i>三等奖</span></div>
+          <div class="btn-row"><button class="btn">开始抽奖</button></div>
+        </div>
+        <div class="stub">
+          <p class="lab">完 成 凭 证</p>
+          <div class="code">SX-7Q3M-A1K9</div>
+          <p class="aw">纪念奖 + 抽奖：一等奖 ×1</p>
+          <p class="tip">请抽完全部机会后，带此码到兑奖处出示。</p>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+    <!-- 10 赛博礼物·烟花 -->
+    <section class="frame" id="s10">
+      <p class="frame-label"><b>10</b>赛博礼物 · 烟花 + 出现/离开 <span class="new">动效</span></p>
+      <p class="frame-sub">出现时绽放烟花；可点击重播「出现」与「离开」</p>
+      <div class="phone"><div class="screen cg-screen">
+        <div class="cg-stage entering" id="cg1" data-fw="#37cdbb,#c79a52,#19a394,#ecd9ad">
+          <div class="cg-back"></div>
+          <div class="fw-layer"></div>
+          <div class="cg-card">
+            <span class="cg-badge">赛 博 礼 物</span>
+            <h2>赛博礼物已送达</h2>
+            <p>谢谢你一起完成这趟楼里的旅程。愿今晚的烟花，也算一份来自社系毕业晚会的祝福。</p>
+            <button class="btn" onclick="cgLeave('cg1')">收下这份祝福</button>
+          </div>
+          <div class="cg-left-note">已收下祝福，回到答题页 ✦</div>
+        </div>
+        <div class="cg-bar">
+          <button onclick="cgEnter('cg1')">▷ 重播「出现 + 烟花」</button>
+          <button onclick="cgLeave('cg1')">▷ 播放「离开」</button>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- 11 后台核销 -->
+    <section class="frame" id="s11">
+      <p class="frame-label"><b>11</b>工作人员后台 · 核销</p>
+      <p class="frame-sub">指标 + 兑奖码查询 + 资格核验</p>
+      <div class="phone"><div class="screen admin-screen">
+        <div class="appbar"><div class="brand">工作人员后台<small>运 行 与 核 销</small></div><span class="dot" style="background:var(--teal)"></span></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="mn">128</div><div class="ml">参与者</div></div>
+          <div class="metric"><div class="mn">642</div><div class="ml">有效提交</div></div>
+          <div class="metric"><div class="mn">73</div><div class="ml">完成终章</div></div>
+          <div class="metric"><div class="mn">51</div><div class="ml">已抽奖</div></div>
+          <div class="metric"><div class="mn">9</div><div class="ml">额外奖剩余</div></div>
+          <div class="metric"><div class="mn">40</div><div class="ml">纪念奖库存</div></div>
+        </div>
+        <div class="admin-card">
+          <h3>核销兑奖码</h3>
+          <div class="field"><input class="input" value="SX-7Q3M-A1K9"></div>
+          <div class="btn-row" style="margin-top:11px"><button class="btn">查询兑奖码</button></div>
+          <div class="award-box">
+            <div>学号：<b>2201110716</b>　手机号：<b>138****6027</b></div>
+            <div>完成题目：<b>9 题</b>（主线 6/6 · 旁枝 3/3 · 终章已完成）</div>
+            <div>奖项结果：<span class="lvl">纪念奖 + 一等奖</span></div>
+          </div>
+          <div class="btn-row" style="margin-top:13px"><button class="btn">确认为 26 届毕业生，核销实体礼物</button><button class="btn ghost">不是 26 届，发送赛博礼物</button></div>
+        </div>
+        <div class="admin-card">
+          <h3>奖品剩余情况</h3>
+          <table class="mini">
+            <thead><tr><th>奖品</th><th>总数</th><th>已预定</th><th>已核销</th><th>剩余</th></tr></thead>
+            <tbody>
+              <tr><td>纪念奖</td><td>40</td><td>31</td><td>22</td><td class="ok">9</td></tr>
+              <tr><td>一等奖</td><td>10</td><td>6</td><td>4</td><td class="ok">4</td></tr>
+              <tr><td>二等奖</td><td>20</td><td>14</td><td>9</td><td class="wait">6</td></tr>
+              <tr><td>三等奖</td><td>60</td><td>41</td><td>30</td><td class="ok">19</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tailspace"></div>
+      </div></div>
+    </section>
+
+  </main>
+
+  <p class="foot">蓝绿松石 v2（第三轮）　|　纯静态视觉预览，假数据，不连后端　|　选定后再正式适配回 static/ 前端并对接 API</p>
+
+  <script>
+    function toggleFold(btn){ btn.closest('.fold').classList.toggle('open'); }
+    function paperUnfold(id){ var s=document.getElementById(id); s.classList.remove('crumpling','gone'); void s.offsetWidth; s.classList.add('unfolding'); }
+    function paperCrumple(id){ var s=document.getElementById(id); s.classList.remove('unfolding'); void s.offsetWidth; s.classList.add('crumpling'); setTimeout(function(){ if(s.classList.contains('crumpling')) s.classList.add('gone'); }, 700); }
+    function cgEnter(id){ var s=document.getElementById(id); s.classList.remove('leaving','left'); void s.offsetWidth; s.classList.add('entering'); fireworks(s); }
+    function cgLeave(id){ var s=document.getElementById(id); s.classList.remove('entering'); void s.offsetWidth; s.classList.add('leaving'); setTimeout(function(){ if(s.classList.contains('leaving')) s.classList.add('left'); }, 560); }
+    function fireworks(stage){
+      var layer=stage.querySelector('.fw-layer'); if(!layer) return; layer.innerHTML='';
+      var colors=(stage.dataset.fw||'#37cdbb,#c79a52,#19a394').split(',');
+      var W=stage.clientWidth||320, H=stage.clientHeight||500;
+      for(var b=0;b<5;b++){ (function(b){ setTimeout(function(){ burst(layer, W*(0.18+0.64*Math.random()), H*(0.20+0.34*Math.random()), colors[b%colors.length]); }, b*380); })(b); }
+    }
+    function burst(layer, cx, cy, color){
+      var n=26;
+      for(var i=0;i<n;i++){
+        var ang=(i/n)*Math.PI*2 + Math.random()*0.2, dist=46+Math.random()*64;
+        var p=document.createElement('span'); p.className='fw-dot';
+        p.style.left=cx+'px'; p.style.top=cy+'px'; p.style.color=color;
+        p.style.setProperty('--tx',(Math.cos(ang)*dist).toFixed(1)+'px');
+        p.style.setProperty('--ty',(Math.sin(ang)*dist+38).toFixed(1)+'px');
+        p.style.animationDelay=(Math.random()*70).toFixed(0)+'ms';
+        layer.appendChild(p);
+        (function(el){ setTimeout(function(){ el.remove(); }, 1400); })(p);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function(){ var cg=document.getElementById('cg1'); if(cg) fireworks(cg); });
+  </script>
+</body>
+</html>

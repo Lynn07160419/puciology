@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">题目附图占位</title>
+  <desc id="desc">后续替换为现场题目照片</desc>
+  <rect width="960" height="540" fill="#fbfaf6"/>
+  <rect x="40" y="40" width="880" height="460" rx="24" fill="#fff" stroke="#ded8cb" stroke-width="4"/>
+  <path d="M100 410h760L632 245 500 335 380 210 100 410Z" fill="#fff4d5" stroke="#d9b45d" stroke-width="4"/>
+  <circle cx="700" cy="150" r="54" fill="#e6f4ee" stroke="#24745a" stroke-width="4"/>
+  <text x="480" y="268" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" font-size="46" font-weight="700" fill="#8f1d2c">题目附图占位</text>
+  <text x="480" y="326" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif" font-size="26" fill="#657086">后续替换为现场照片</text>
+</svg>
