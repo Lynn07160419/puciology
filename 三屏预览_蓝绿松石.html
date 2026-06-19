@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>三屏预览 · 入楼 / 答题 / 奖励（蓝绿松石）</title>
+<style>
+  :root{
+    --bg:#eef4f1; --bg-2:#e3eeea; --card:#ffffff;
+    --ink:#163029; --ink-soft:#4f665f; --ink-faint:#90a59e;
+    --teal:#138a7d; --teal-2:#0e6f64; --teal-deep:#0b524a; --teal-soft:#d8ece8;
+    --teal-grad:linear-gradient(135deg,#19a394,#0e7468);
+    --brass:#c79a52; --brass-2:#a87f3c; --brass-soft:#ecd9ad;
+    --mute:#93b3ac; --err:#c25b43; --line:#dce8e3;
+    --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --shadow:0 16px 34px -28px rgba(11,82,74,.4);
+    --shadow-lg:0 26px 54px -26px rgba(11,82,74,.5);
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; color:var(--ink); font-family:var(--sans); line-height:1.7;
+    background:radial-gradient(820px 480px at 88% 2%, rgba(19,138,125,.12), transparent 62%),
+      radial-gradient(620px 420px at 8% 8%, rgba(199,154,82,.1), transparent 56%),
+      linear-gradient(180deg,#f4f8f4 0%, var(--bg) 42%, #e9f0ec 100%);
+    -webkit-font-smoothing:antialiased}
+  ::selection{color:#fff;background:var(--teal-2)}
+
+  .masthead{position:sticky; top:0; z-index:30; border-bottom:1px solid var(--line);
+    background:rgba(241,245,240,.86); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+  .masthead-in{width:min(1180px,calc(100% - 32px)); margin:0 auto; display:flex; flex-wrap:wrap; gap:10px 18px;
+    align-items:center; justify-content:space-between; padding:12px 0}
+  .mast-title b{font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+  .mast-title small{display:block; color:var(--ink-soft); font-size:12px}
+  .nav{display:inline-flex; gap:6px}
+  .nav a{font:inherit; font-size:13px; font-weight:700; text-decoration:none; color:var(--ink-soft);
+    padding:7px 13px; border-radius:999px; border:1px solid var(--line); background:#fff}
+  .nav a:hover{color:var(--teal-deep); border-color:rgba(19,138,125,.3); background:rgba(216,236,232,.7)}
+
+  .intro{width:min(1180px,calc(100% - 32px)); margin:24px auto 0}
+  .intro h1{margin:0 0 8px; font-family:var(--serif); font-size:clamp(22px,3vw,32px); color:var(--teal-deep)}
+  .intro p{margin:0; max-width:780px; color:var(--ink-soft); font-size:14px}
+
+  .stage{width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:48px 0;
+    display:grid; grid-template-columns:minmax(0,1fr) 392px; gap:46px; align-items:start; border-top:1px solid var(--line)}
+  .stage:first-of-type{border-top:0}
+  .note .pill{display:inline-flex; align-items:center; gap:8px; margin-bottom:12px; padding:4px 12px; border-radius:999px;
+    font-size:12px; font-weight:700; color:var(--teal-2); background:var(--teal-soft)}
+  .note h2{margin:0 0 8px; font-family:var(--serif); font-size:clamp(22px,2.4vw,28px); color:var(--teal-deep); line-height:1.25}
+  .note .lead{margin:0 0 6px; font-size:14.5px; color:var(--ink)}
+  .note .sub{margin:0 0 16px; color:var(--ink-soft); font-size:13.5px}
+  .cues{display:grid; gap:10px}
+  .cue-item{display:grid; grid-template-columns:26px 1fr; gap:12px; align-items:start; padding:12px 14px;
+    border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:var(--shadow)}
+  .cue-num{width:26px; height:26px; display:grid; place-items:center; border-radius:50%; font-size:13px; font-weight:800; color:#fff; background:var(--teal-2)}
+  .cue-item b{display:block; font-size:14px; color:var(--teal-deep)}
+  .cue-item p{margin:2px 0 0; font-size:13px; color:var(--ink-soft)}
+  .cue-item .why{color:var(--brass-2); font-size:12.5px}
+  .controls{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+  .ctl{border:1px solid var(--teal-2); color:var(--teal-2); background:transparent; padding:8px 14px; border-radius:10px;
+    font:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:background .18s var(--ease)}
+  .ctl:hover{background:rgba(19,138,125,.08)}
+  .ctl.solid{background:var(--teal-grad); color:#fff; border-color:transparent; box-shadow:0 10px 18px -12px rgba(14,111,100,.7)}
+
+  /* 手机 */
+  .phone-stage{position:sticky; top:80px; display:grid; place-items:center}
+  .phone{width:min(100%,376px); padding:12px; border-radius:42px;
+    background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0)), #071b18;
+    box-shadow:0 40px 90px -48px rgba(7,31,28,.85), 0 0 0 1px rgba(199,154,82,.22) inset}
+  .phone::before{content:""; display:block; width:92px; height:7px; margin:8px auto 11px; border-radius:99px; background:#03110f}
+  .phone-screen{position:relative; height:716px; overflow-y:auto; overflow-x:hidden; border-radius:30px; background:var(--bg);
+    scrollbar-width:thin; scrollbar-color:var(--mute) transparent}
+  .phone-screen::-webkit-scrollbar{width:7px}
+  .phone-screen::-webkit-scrollbar-thumb{background:var(--mute); border-radius:99px}
+  .scrollhint{position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:9; font-size:11px; color:var(--ink-faint);
+    background:rgba(255,255,255,.82); padding:3px 10px; border-radius:999px; border:1px solid var(--line); pointer-events:none;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px)}
+
+  .m-topbar{position:sticky; top:0; z-index:8; display:flex; align-items:center; justify-content:space-between; padding:13px 16px;
+    border-bottom:1px solid var(--line); background:rgba(238,244,241,.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+  .m-brand{font-family:var(--serif); font-weight:700; color:var(--teal-deep); font-size:14px}
+  .m-nav{font-size:12px; color:var(--teal-2)}
+  .m-pad{padding:16px 14px 30px}
+
+  .cue{position:relative}
+  .cue > .tag{position:absolute; z-index:7; top:-9px; left:-7px; width:22px; height:22px; display:grid; place-items:center;
+    border-radius:50%; font-size:12px; font-weight:800; color:#fff; background:var(--teal-2); box-shadow:0 4px 10px -4px rgba(0,0,0,.5)}
+  .cue.gold > .tag{background:var(--brass-2)}
+
+  /* 通用控件 */
+  .badge{display:inline-flex; align-items:center; min-height:24px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700}
+  .badge.main{color:var(--teal-2); background:var(--teal-soft)}
+  .badge.bonus{color:#5f7d75; background:#eef3f1}
+  .btn{min-height:46px; display:inline-flex; align-items:center; justify-content:center; width:100%; border:0; border-radius:12px;
+    color:#fff; background:var(--teal-grad); box-shadow:0 12px 22px -12px rgba(14,111,100,.7); font:inherit; font-weight:700; font-size:14.5px; cursor:pointer; transition:filter .16s var(--ease), transform .16s var(--ease)}
+  .btn:active{transform:scale(.97)} .btn:disabled{background:#9fb8b2; box-shadow:none; cursor:default}
+  .btn.small{min-height:42px; font-size:13.5px}
+  .field{width:100%; height:44px; border:1.5px solid var(--line); border-radius:12px; padding:0 12px; background:#fbfdfc; outline:0; font:inherit; font-size:14px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease)}
+  .field:focus{border-color:var(--teal); box-shadow:0 0 0 4px rgba(19,138,125,.12); background:#fff}
+
+  /* ===== 入楼 ===== */
+  .entry-hero{position:relative; min-height:392px; display:grid; align-content:end; color:#fff; overflow:hidden;
+    background:linear-gradient(180deg, rgba(7,31,28,.05), rgba(7,31,28,.86))}
+  .entry-hero .img{position:absolute; inset:0; z-index:-1; background:url("static/assets/a2-zhou-feizhou-mailbox.jpg") center/cover}
+  .entry-hero .img.kb{animation:kb 11s ease-in-out infinite alternate}
+  @keyframes kb{to{transform:scale(1.12) translateX(-10px)}}
+  .entry-hero .copy{padding:0 18px 16px}
+  .entry-hero .eyebrow{margin:0 0 8px; font-family:var(--serif); font-size:12px; letter-spacing:.3em; color:#9be1d6}
+  .entry-hero h2{margin:0; font-family:var(--serif); font-size:25px; line-height:1.28}
+  .entry-hero p.sub{margin:10px 0 0; font-size:12.5px; color:rgba(255,255,255,.82)}
+  .entry-frost{margin:-20px 14px 0; position:relative; z-index:2; padding:16px; border-radius:16px;
+    background:rgba(255,255,255,.8); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,.6); box-shadow:var(--shadow-lg); display:grid; gap:11px}
+  .entry-frost h3{margin:0; font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+  .entry-note{font-size:11.5px; color:var(--ink-faint); text-align:center}
+  .entry-test{text-align:center; font-size:12px; color:var(--ink-faint)}
+  .entry-test a{color:var(--teal-2)}
+
+  /* ===== 答题 ===== */
+  .summary-panel{padding:16px; border-radius:16px; color:#d6ece7; background:linear-gradient(135deg,var(--teal-deep),#0a443d); box-shadow:0 16px 32px -22px rgba(11,82,74,.6)}
+  .summary-panel .toolbar{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+  .summary-panel h2{margin:0; font-family:var(--serif); font-size:16px; color:#eaf5f1}
+  .summary-panel .who{font-size:11px; color:#86bcb2; margin-top:2px}
+  .ghost{border:1px solid #bfe4dd; color:#bfe4dd; background:transparent; border-radius:10px; padding:6px 11px; font:inherit; font-size:12px; cursor:pointer}
+  .progress-bar{height:8px; margin:14px 0 8px; border-radius:99px; background:rgba(255,255,255,.15); overflow:hidden}
+  .progress-bar i{display:block; height:100%; border-radius:inherit; width:34%; background:linear-gradient(90deg,#37cdbb,#19a394); transition:width .9s var(--ease)}
+  .status-row{display:flex; gap:12px; font-size:12px; color:#a4cdc6}
+  .cooldown{margin-top:9px; font-size:12px; color:#82b2a9}
+  .cooldown.active{color:#f0c6b8}
+  .cooldown .num{font-variant-numeric:tabular-nums}
+
+  .question-card{margin-top:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:0 10px 24px -14px rgba(11,82,74,.45); overflow:hidden}
+  .question-card.err{border-color:rgba(194,91,67,.45); animation:shake .4s}
+  @keyframes shake{10%,90%{transform:translateX(-1px)}30%,70%{transform:translateX(3px)}50%{transform:translateX(-4px)}}
+  .q-titlerow{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 15px 10px}
+  .q-titlerow h4{margin:0; font-family:var(--serif); font-size:15px; color:var(--teal-deep)}
+  .prompt{margin:0; padding:0 15px; font-family:var(--serif); font-size:17.5px; line-height:2.05; color:var(--ink)}
+  .q-img{margin:14px 15px 0; height:152px; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:#0a1f1c}
+  .q-img img{width:100%; height:100%; object-fit:cover}
+  .form-row{display:grid; grid-template-columns:1fr 96px; gap:8px; padding:13px 15px 16px}
+  .rescue-card{margin:0 15px 14px; padding:12px 13px; border:1px dashed var(--brass); border-radius:11px; background:rgba(199,154,82,.08); display:grid; gap:9px; animation:fadeup .4s var(--ease)}
+  .rescue-title{margin:0; font-size:12px; font-weight:700; color:var(--brass-2)}
+  .rescue-item b{display:block; font-size:12px; color:var(--teal-deep)}
+  .rescue-item p{margin:1px 0 0; font-size:12.5px; color:var(--ink-soft)}
+  .branch-card{display:grid; gap:10px; padding:15px 17px 16px; border:1px solid rgba(199,154,82,.45); border-radius:16px; background:#fff; box-shadow:0 10px 24px -14px rgba(11,82,74,.45); margin-top:14px}
+  .branch-card .q-titlerow{padding:0}
+  .branch-card .prompt{padding:0; font-family:var(--sans); font-size:14.5px; line-height:1.85}
+  .branch-meta{display:flex; flex-wrap:wrap; gap:6px}
+  .branch-meta span{font-size:11px; color:#5f7d75; background:rgba(147,179,172,.18); border-radius:999px; padding:3px 10px}
+  .branch-card .form-row{padding:0}
+
+  /* ===== 奖励 ===== */
+  .reward-head{margin-bottom:14px}
+  .reward-head .eyebrow{margin:0 0 4px; font-family:var(--serif); font-size:12px; letter-spacing:.24em; color:var(--teal-2)}
+  .reward-head h2{margin:0; font-family:var(--serif); font-size:20px; color:var(--teal-deep)}
+  .reward-head p{margin:6px 0 0; font-size:12.5px; color:var(--ink-soft)}
+  .lottery-panel{padding:16px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:var(--shadow); display:grid; gap:12px}
+  .lottery-head{display:flex; align-items:center; justify-content:space-between}
+  .lottery-head h3{margin:0; font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+  .lottery-head .small{margin:2px 0 0; font-size:11.5px; color:var(--ink-faint)}
+  .lottery-count{width:44px; height:44px; display:grid; place-items:center; border-radius:50%; font-family:var(--serif); font-size:20px; font-weight:700; color:var(--brass-2); background:var(--brass-soft)}
+  .wheel-wrap{position:relative; width:220px; margin:6px auto 0; display:grid; place-items:center}
+  .wheel-pointer{position:absolute; top:-4px; left:50%; transform:translateX(-50%); z-index:3; width:0; height:0;
+    border-left:9px solid transparent; border-right:9px solid transparent; border-top:16px solid var(--teal-deep)}
+  .wheel{width:220px; height:220px; border-radius:50%; border:6px solid #fff; box-shadow:0 12px 26px -14px rgba(11,82,74,.5), 0 0 0 2px var(--line);
+    background:conic-gradient(var(--mute) 0deg 30deg, var(--teal) 30deg 60deg, var(--brass) 60deg 90deg, var(--mute) 90deg 120deg, var(--teal) 120deg 150deg, var(--mute) 150deg 180deg, var(--brass) 180deg 210deg, var(--teal) 210deg 240deg, var(--mute) 240deg 270deg, var(--teal) 270deg 300deg, var(--brass) 300deg 330deg, var(--mute) 330deg 360deg);
+    transition:transform 4.2s cubic-bezier(.13,.72,.12,1)}
+  .wheel-center{position:absolute; width:84px; height:84px; border-radius:50%; background:#fff; border:2px solid var(--brass);
+    display:grid; place-items:center; text-align:center; font-family:var(--serif); font-size:13px; color:var(--teal-2); box-shadow:0 6px 14px -8px rgba(11,82,74,.5)}
+  .wheel-legend{display:flex; justify-content:center; gap:14px; font-size:12px; color:var(--ink-soft)}
+  .wheel-legend span{display:inline-flex; align-items:center; gap:5px}
+  .wheel-legend i{width:11px; height:11px; border-radius:3px; display:inline-block}
+  .lottery-result{margin:0; text-align:center; font-size:13px; color:var(--ink-soft)}
+  .lottery-result b{color:var(--teal-deep)}
+
+  .reward-stage{position:relative; overflow:hidden; margin-top:16px; min-height:228px; padding:20px 16px; border-radius:16px;
+    background:radial-gradient(420px 250px at 50% 16%, rgba(19,138,125,.28), transparent 70%), #081f1c}
+  .ticket{position:relative; z-index:2; padding:20px 18px; border:1.5px solid var(--brass); border-radius:14px; color:#fff;
+    background:linear-gradient(135deg,#0c453f,#08332e); box-shadow:0 22px 42px -24px rgba(0,0,0,.7); opacity:0}
+  .ticket.show{opacity:1}
+  .ticket.run{animation:ticketIn .9s var(--ease) both}
+  @keyframes ticketIn{0%{opacity:0; transform:translateY(34px) scale(.9)}60%{opacity:1}100%{opacity:1; transform:none}}
+  .ticket::before,.ticket::after{content:""; position:absolute; top:50%; width:18px; height:18px; border-radius:50%; background:#081f1c; transform:translateY(-50%)}
+  .ticket::before{left:-10px} .ticket::after{right:-10px}
+  .ticket small{display:block; margin-bottom:8px; text-align:center; color:var(--brass-soft); font-family:var(--serif); letter-spacing:.26em; font-size:12px}
+  .ticket strong{display:block; text-align:center; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:22px; letter-spacing:.12em}
+  .ticket .award{margin:10px 0 0; text-align:center; font-size:12.5px; color:#cfeae3}
+  .ticket .hint{margin:4px 0 0; text-align:center; font-size:11px; color:#86bcb2}
+  .reward-empty{position:relative; z-index:2; display:grid; place-items:center; height:188px; color:#86bcb2; font-size:12.5px; text-align:center; padding:0 20px}
+  .spark{position:absolute; left:50%; top:50%; width:7px; height:7px; border-radius:50%; color:#37cdbb; background:currentColor; box-shadow:0 0 10px currentColor; transform:translate(-50%,-50%); opacity:0}
+  .spark:nth-child(2n){color:var(--brass)} .spark:nth-child(3n){color:#d9eee9}
+  .spark.run{animation:burst 1.25s ease-out forwards}
+  @keyframes burst{0%{opacity:0; transform:translate(-50%,-50%) scale(.5)}14%{opacity:1}100%{opacity:0; transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(.2)}}
+
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .55s var(--ease), transform .55s var(--ease)}
+  .reveal.in{opacity:1; transform:none}
+  @keyframes fadeup{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  .blurup{filter:blur(14px); transform:scale(1.04); transition:filter .7s var(--ease), transform .7s var(--ease)}
+  .blurup.loaded{filter:none; transform:none}
+
+  .footer{width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:24px 0 56px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:13px}
+
+  @media (max-width:980px){ .stage{grid-template-columns:1fr; gap:24px} .phone-stage{position:relative; top:auto} }
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1; transform:none; transition:none}
+    .entry-hero .img.kb,.ticket.run,.spark.run{animation:none}
+    .blurup{filter:none; transform:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <div class="mast-title">
+      <b>三屏预览 · 入楼 / 答题 / 奖励</b>
+      <small>和终章同标准的实样：编号 ①②③ 对应左侧解释，手机可滚动、按钮可点。真实文案/数据。</small>
+    </div>
+    <nav class="nav">
+      <a href="#s-entry">① 入楼</a>
+      <a href="#s-question">② 答题</a>
+      <a href="#s-reward">⑤ 奖励</a>
+    </nav>
+  </div>
+</header>
+
+<section class="intro">
+  <h1>逐屏过一遍：改动后的真实观感</h1>
+  <p>每屏右侧手机是「改动后」效果，可上下滚动、点按交互；左侧逐条解释改了什么、为什么。聚焦高回报方案 + 轻量氛围，后端交互一律不变。</p>
+</section>
+
+<!-- ===================== ① 入楼 ===================== -->
+<section class="stage" id="s-entry">
+  <div class="note">
+    <span class="pill">① 入楼 · 首页/登录</span>
+    <h2>从「表单」变成「领取路线」的第一幕</h2>
+    <p class="lead">当前登录屏是纯文字表单、没有图。改动后用信箱实拍铺底 + 磨砂登录卡，第一眼就进入毕业叙事。</p>
+    <p class="sub">对照右侧 ①②③：</p>
+    <div class="cues">
+      <div class="cue-item"><span class="cue-num">1</span><div><b>楼内实拍 Hero</b><p>周飞舟老师信箱实拍铺底 + 深松石压暗 + 缓慢推近（ken-burns）。<span class="why">为什么：让玩家一眼进入"理科五号楼"的现场感，而不是先看到表单。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">2</span><div><b>标题文案（真实）</b><p>眉标「社系毕业晚会解密」+ 衬线大标题，取真实导语"在理科五号楼…收集六段毕业回声"。<span class="why">为什么：用活动本身的句子交代这是什么、要做什么。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">3</span><div><b>磨砂登录卡</b><p>学号 / 手机号 / 「进入活动」浮在磨砂卡上；测试入口降级为小字链接。<span class="why">为什么：减少纯白表单的工具感，主行动线更聚焦（字段、提交逻辑完全不变）。</span></p></div></div>
+    </div>
+    <div class="controls"><button class="ctl solid" onclick="replayEntry()">▶ 重播入场动效</button></div>
+  </div>
+  <div class="phone-stage"><div class="phone"><div class="phone-screen" id="screen-entry">
+    <div class="m-topbar"><span class="m-brand">定向解密</span><span class="m-nav">活动</span></div>
+    <section class="entry-hero cue"><span class="tag">1</span>
+      <div class="img kb" id="heroImg" aria-hidden="true"></div>
+      <div class="copy cue" style="margin-bottom:0"><span class="tag" style="top:-2px">2</span>
+        <p class="eyebrow">社 系 毕 业 晚 会 解 密</p>
+        <h2>在理科五号楼，<br/>收集六段毕业回声</h2>
+        <p class="sub">一二层与中庭里寻线索，最后唱出终章口令。</p>
+      </div>
+    </section>
+    <div class="entry-frost cue"><span class="tag">3</span>
+      <h3>用学号和手机号开启这一程</h3>
+      <input class="field" placeholder="请输入学号" inputmode="numeric" />
+      <input class="field" placeholder="请输入手机号" inputmode="numeric" />
+      <button class="btn" type="button">进入活动</button>
+      <p class="entry-note">每个学号绑定一个手机号 · 进度自动保存</p>
+      <p class="entry-test">调试用 · <a href="#">测试人员入口</a></p>
+    </div>
+    <div style="height:18px"></div>
+  </div></div></div>
+</section>
+
+<!-- ===================== ② 答题 ===================== -->
+<section class="stage" id="s-question">
+  <div class="note">
+    <span class="pill">② 答题 · 沿着楼的线索前进</span>
+    <h2>「沿楼推进」：进度吸顶 + 滚动揭示 + 答错救援</h2>
+    <p class="lead">题卡、衬线题面、卡片阴影已是现状。改动后让进度常驻、题卡逐张揭示、题图模糊转清晰、答错有温和指引、冷却倒计时不抖。</p>
+    <p class="sub">在手机里向下滚动看揭示；点题卡的「提交」可看"答错"示意。对照 ①②③④：</p>
+    <div class="cues">
+      <div class="cue-item"><span class="cue-num">1</span><div><b>进度吸顶 + 冷却定宽</b><p>「当前进度」卡 sticky 常驻顶部；答错冷却用等宽数字，倒计时不抖动按钮。<span class="why">为什么：滚动中目标始终可见；按钮宽度稳定。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">2</span><div><b>题卡滚动揭示</b><p>题卡进入视口淡入上浮一次（IntersectionObserver，全平台可用）。<span class="why">为什么：像沿楼一层层推进的节奏感。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">3</span><div><b>题图模糊→清晰</b><p>题图 lazy 加载 + blur-up 过渡。<span class="why">为什么：出图不突兀，弱网下也优雅。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">4</span><div><b>答错救援（地图注释式）</b><p>答错时题卡转红高亮 + 救援提示展开（真实救援文案）+ 进入冷却。<span class="why">为什么：答错给温和指引，不是冷冰冰报错。</span></p></div></div>
+    </div>
+    <div class="controls">
+      <button class="ctl solid" onclick="replayQuestion()">▶ 重置并重播揭示</button>
+      <button class="ctl" onclick="simWrong()">模拟答错（看救援+冷却）</button>
+    </div>
+  </div>
+  <div class="phone-stage"><div class="phone"><div class="phone-screen" id="screen-question">
+    <span class="scrollhint">在手机内向下滚动 ↓</span>
+    <div class="m-topbar"><span class="m-brand">沿着楼的线索前进</span><span class="m-nav">活动</span></div>
+    <div class="m-pad">
+      <div class="summary-panel cue" style="position:sticky; top:48px; z-index:6"><span class="tag">1</span>
+        <div class="toolbar">
+          <div><h2>当前进度</h2><div class="who">学号：230xxxxxxx</div></div>
+          <button class="ghost">更换学号</button>
+        </div>
+        <div class="progress-bar"><i></i></div>
+        <div class="status-row"><span>主线 2/6</span><span>旁枝 0/3</span></div>
+        <div class="cooldown" id="qCooldown">任一题答错后，终止答题 15s。</div>
+      </div>
+
+      <article class="question-card reveal">
+        <div class="q-titlerow"><h4>拾级而上</h4><span class="badge main">主线</span></div>
+        <p class="prompt">从电梯旁的阶梯自一楼向二楼走，脚下有两次提醒你留神。用数字记下它们所在的位置，把两个数字排成最大的可能。</p>
+        <div class="form-row"><input class="field" placeholder="3 位数字"/><button class="btn small">提交</button></div>
+      </article>
+
+      <article class="question-card reveal" id="cardA2">
+        <div class="q-titlerow"><h4>一层走廊</h4><span class="badge main">主线</span></div>
+        <p class="prompt">先从飞舟老师信箱里借一个门牌号。找到那扇门后，面对房门，门右侧有一块带有红与灰的方形守夜人，请读出它属于第几个巡查点。</p>
+        <div class="q-img cue"><span class="tag">3</span><img class="blurup" data-blur src="static/assets/a2-zhou-feizhou-mailbox.jpg" alt="周飞舟老师信箱照片"/></div>
+        <div class="form-row cue"><span class="tag" style="top:-2px">4</span><input class="field" placeholder="1 位数字"/><button class="btn small" id="a2submit" onclick="simWrong()">提交</button></div>
+      </article>
+
+      <article class="branch-card reveal">
+        <div class="q-titlerow"><h4>一间教室</h4><span class="badge bonus">旁枝</span></div>
+        <div class="branch-meta"><span>地点 · 203 教室</span><span>+1 次抽奖</span></div>
+        <p class="prompt">请在 203 教室的电脑桌前找到唯一一只 logitech 蓝边鼠标，记下大写字母 M 身后的密码；它会带你到《西方社会学理论》精心安排的一页。请找出该页中出现频率最高的社会学家。</p>
+        <div class="form-row"><input class="field" placeholder="3 个汉字"/><button class="btn small">提交</button></div>
+      </article>
+      <div style="height:8px"></div>
+    </div>
+  </div></div></div>
+</section>
+
+<!-- ===================== ⑤ 奖励 ===================== -->
+<section class="stage" id="s-reward">
+  <div class="note">
+    <span class="pill">⑤ 奖励 · 且行且歌共少年</span>
+    <h2>落幕：转盘落定 → 票根登场 → 烟花收束</h2>
+    <p class="lead">烟花、暖铜边票根、转盘 5s 旋转都已实现。改动后只做收尾：抽完才公布票根、票根入场动画、火花收束到凭证附近。</p>
+    <p class="sub">点「开始抽奖」让转盘真的转，按指针读结果；抽完 2 次出票根 + 烟花。对照 ①②③：</p>
+    <div class="cues">
+      <div class="cue-item"><span class="cue-num">1</span><div><b>抽奖转盘（真实奖项）</b><p>纪念奖保底 + 一/二/三等奖（色＝暖铜 / 松石 / 青灰）。转盘停稳后再公布结果。<span class="why">为什么：给抽奖一个"落定"的仪式节拍，而非瞬间弹结果。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">2</span><div><b>完成凭证票根</b><p>入场动画 + 等宽码 + 暖铜边 + 撕孔；真实兑奖文案"请到兑奖处出示此码"。<span class="why">为什么：让最终凭证像一张可纪念的票。</span></p></div></div>
+      <div class="cue-item"><span class="cue-num">3</span><div><b>烟花收束</b><p>火花原点聚到票根附近，而非满屏乱放。<span class="why">为什么：把"奖励出现"做成一个有重量的落幕瞬间。</span></p></div></div>
+    </div>
+    <div class="controls">
+      <button class="ctl solid" id="spinBtn" onclick="spin()">开始抽奖</button>
+      <button class="ctl" onclick="resetReward()">重置</button>
+    </div>
+  </div>
+  <div class="phone-stage"><div class="phone"><div class="phone-screen" id="screen-reward">
+    <div class="m-topbar"><span class="m-brand">且行且歌共少年</span><span class="m-nav">活动</span></div>
+    <div class="m-pad">
+      <div class="reward-head">
+        <p class="eyebrow">终 章 完 成</p>
+        <h2>且行且歌共少年</h2>
+        <p>终章完成，游戏已经结束。抽完全部机会后，凭完成凭证到兑奖处领取礼物。</p>
+      </div>
+
+      <div class="lottery-panel cue"><span class="tag">1</span>
+        <div class="lottery-head">
+          <div><h3>抽奖转盘</h3><p class="small" id="drawInfo">抽奖进度：0/2，剩余 2 次</p></div>
+          <div class="lottery-count" id="drawCount">2</div>
+        </div>
+        <div class="wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <div class="wheel" id="wheel"></div>
+          <div class="wheel-center" id="wheelCenter">抽奖<br/>转盘</div>
+        </div>
+        <div class="wheel-legend">
+          <span><i style="background:var(--brass)"></i>一等奖</span>
+          <span><i style="background:var(--teal)"></i>二等奖</span>
+          <span><i style="background:var(--mute)"></i>三等奖</span>
+        </div>
+        <p class="lottery-result" id="lotResult">还没有抽奖结果。</p>
+      </div>
+
+      <div class="reward-stage cue gold" id="rewardStage"><span class="tag">2</span>
+        <div class="reward-empty" id="rewardEmpty">抽完全部机会后，这里会出现你的完成凭证票根。</div>
+        <div class="ticket" id="rewardTicket">
+          <small>完 成 凭 证</small>
+          <strong>SX-7Q3M-A1K9</strong>
+          <p class="award" id="ticketAward">纪念奖 + 二等奖 1 份 + 一等奖 1 份</p>
+          <p class="hint">请到兑奖处出示此码</p>
+        </div>
+      </div>
+    </div>
+  </div></div></div>
+</section>
+
+<footer class="footer">
+  三屏预览 · 不改动正式前端。这四屏（含终章）确认后，我再按《计划》统一落地到 static/styles.css 与 static/app.js，所有答题/抽奖/核销与后端交互保持不变。
+</footer>
+
+<script>
+  /* —— 通用 —— */
+  function armBlur(scope){
+    scope.querySelectorAll('img[data-blur]').forEach(img=>{
+      img.classList.remove('loaded');
+      const done=()=>img.classList.add('loaded');
+      if(img.complete && img.naturalWidth>0){ setTimeout(done, 300); }
+      else { img.addEventListener('load', ()=>setTimeout(done,140), {once:true}); }
+    });
+  }
+  function observeScreen(id){
+    const screen=document.getElementById(id); if(!screen) return;
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},
+      {root:screen, threshold:0.16, rootMargin:'0px 0px -8% 0px'});
+    screen.querySelectorAll('.reveal').forEach(n=>io.observe(n));
+  }
+
+  /* —— ① 入楼 —— */
+  function replayEntry(){
+    const s=document.getElementById('screen-entry'); s.scrollTo({top:0});
+    armBlur(s);
+    s.querySelectorAll('.entry-hero .copy, .entry-frost').forEach((n,i)=>{
+      n.style.animation='none'; void n.offsetHeight;
+      n.style.animation='fadeup .8s var(--ease) both'; n.style.animationDelay=(i*.12)+'s';
+    });
+    const img=document.getElementById('heroImg'); img.classList.remove('kb'); void img.offsetHeight; img.classList.add('kb');
+  }
+
+  /* —— ② 答题 —— */
+  let coolTimer=null;
+  function rescueEl(){
+    const w=document.createElement('div'); w.className='rescue-card';
+    w.innerHTML='<p class="rescue-title">答错了？给你两条线索：</p>'+
+      '<div class="rescue-item"><b>观察范围</b><p>先确认信箱编号对应的门牌，再站到那扇门前。</p></div>'+
+      '<div class="rescue-item"><b>操作翻译</b><p>面对房门，看门右侧红灰色方形固定物，提交巡查点编号。</p></div>';
+    return w;
+  }
+  function simWrong(){
+    const card=document.getElementById('cardA2'); if(card.classList.contains('err')) return;
+    card.classList.remove('in'); void card.offsetHeight; card.classList.add('in','err');
+    if(!card.querySelector('.rescue-card')) card.insertBefore(rescueEl(), card.querySelector('.form-row'));
+    const cd=document.getElementById('qCooldown'); const btn=document.getElementById('a2submit');
+    cd.classList.add('active'); btn.disabled=true;
+    let t=15;
+    const tick=()=>{
+      cd.innerHTML='任一题答错后，终止答题 15s，还剩 <span class="num">'+String(t).padStart(2,'0')+'</span> 秒。';
+      btn.textContent='终止答题 '+t+' 秒';
+      if(t<=0){ clearInterval(coolTimer); cd.classList.remove('active'); cd.textContent='任一题答错后，终止答题 15s。';
+        btn.disabled=false; btn.textContent='提交'; card.classList.remove('err');
+        const r=card.querySelector('.rescue-card'); if(r) r.remove(); return; }
+      t--;
+    };
+    tick(); coolTimer=setInterval(tick,1000);
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  function replayQuestion(){
+    if(coolTimer) clearInterval(coolTimer);
+    const screen=document.getElementById('screen-question'); screen.scrollTo({top:0});
+    const card=document.getElementById('cardA2'); card.classList.remove('err');
+    const r=card.querySelector('.rescue-card'); if(r) r.remove();
+    const cd=document.getElementById('qCooldown'); cd.classList.remove('active'); cd.textContent='任一题答错后，终止答题 15s。';
+    const btn=document.getElementById('a2submit'); btn.disabled=false; btn.textContent='提交';
+    screen.querySelectorAll('.reveal').forEach(n=>n.classList.remove('in'));
+    armBlur(screen);
+    requestAnimationFrame(()=>{ const f=screen.querySelector('.reveal'); if(f) f.classList.add('in'); });
+  }
+
+  /* —— ⑤ 奖励 —— */
+  // 12 段每段 30°，与 conic-gradient 一致：brass=一等奖 / teal=二等奖 / mute=三等奖
+  const SLICE=['mute','teal','brass','mute','teal','mute','brass','teal','mute','teal','brass','mute'];
+  const TIER={brass:'一等奖', teal:'二等奖', mute:'三等奖'};
+  const COLORVAR={brass:'var(--brass)', teal:'var(--teal)', mute:'var(--mute)'};
+  let wheelRot=0, drawsUsed=0, spinning=false; const DRAWS=2; const won=[];
+  function spin(){
+    if(spinning || drawsUsed>=DRAWS) return;
+    spinning=true; const btn=document.getElementById('spinBtn'); btn.disabled=true;
+    document.getElementById('lotResult').textContent='转盘正在转动，今晚的回声正在落定。';
+    wheelRot += 360*5 + Math.floor(Math.random()*360);
+    const wheel=document.getElementById('wheel'); wheel.style.transform='rotate('+wheelRot+'deg)';
+    const onEnd=()=>{
+      wheel.removeEventListener('transitionend', onEnd);
+      const landed=(360 - (wheelRot%360))%360; const color=SLICE[Math.floor(landed/30)];
+      const tier=TIER[color]; won.push(tier); drawsUsed++;
+      const center=document.getElementById('wheelCenter'); center.innerHTML=tier;
+      center.style.color=COLORVAR[color];
+      const remaining=DRAWS-drawsUsed;
+      document.getElementById('drawCount').textContent=remaining;
+      document.getElementById('drawInfo').textContent='抽奖进度：'+drawsUsed+'/'+DRAWS+'，剩余 '+remaining+' 次';
+      document.getElementById('lotResult').innerHTML='已抽中：<b>'+won.join('、')+'</b>';
+      spinning=false;
+      if(remaining>0){ btn.disabled=false; }
+      else { btn.disabled=true; btn.textContent='抽奖已完成'; revealTicket(); }
+    };
+    wheel.addEventListener('transitionend', onEnd);
+  }
+  function revealTicket(){
+    const stage=document.getElementById('rewardStage');
+    document.getElementById('rewardEmpty').style.display='none';
+    document.getElementById('ticketAward').textContent='纪念奖 + '+won.join(' 1 份 + ')+' 1 份';
+    const t=document.getElementById('rewardTicket');
+    t.classList.add('show'); t.classList.remove('run'); void t.offsetHeight; t.classList.add('run');
+    stage.querySelectorAll('.spark').forEach(s=>s.remove());
+    const N=14;
+    for(let i=0;i<N;i++){
+      const sp=document.createElement('span'); sp.className='spark';
+      const ang=(Math.PI*2*i)/N + (i%2?0.3:0); const r=66+(i%4)*16;
+      sp.style.setProperty('--x', Math.cos(ang)*r+'px');
+      sp.style.setProperty('--y', (Math.sin(ang)*r-12)+'px');
+      sp.style.animationDelay=(i*40)+'ms';
+      stage.appendChild(sp); void sp.offsetHeight; sp.classList.add('run');
+    }
+    stage.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  function resetReward(){
+    wheelRot=0; drawsUsed=0; spinning=false; won.length=0;
+    const wheel=document.getElementById('wheel'); wheel.style.transition='none'; wheel.style.transform='rotate(0deg)';
+    void wheel.offsetHeight; wheel.style.transition='';
+    document.getElementById('wheelCenter').innerHTML='抽奖<br/>转盘'; document.getElementById('wheelCenter').style.color='';
+    document.getElementById('drawCount').textContent='2';
+    document.getElementById('drawInfo').textContent='抽奖进度：0/2，剩余 2 次';
+    document.getElementById('lotResult').textContent='还没有抽奖结果。';
+    const btn=document.getElementById('spinBtn'); btn.disabled=false; btn.textContent='开始抽奖';
+    const t=document.getElementById('rewardTicket'); t.classList.remove('show','run');
+    document.getElementById('rewardEmpty').style.display='';
+    document.getElementById('rewardStage').querySelectorAll('.spark').forEach(s=>s.remove());
+  }
+
+  window.addEventListener('DOMContentLoaded', ()=>{
+    observeScreen('screen-question');
+    replayEntry();
+    requestAnimationFrame(()=>{ const f=document.querySelector('#screen-question .reveal'); if(f) f.classList.add('in'); });
+  });
+</script>
+</body>
+</html>

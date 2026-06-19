@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>终章 · 设计预览（现状 / 方案A 节目单 / 方案B 乐谱册）</title>
+<style>
+  :root{
+    --bg:#eef4f1; --bg-2:#e3eeea; --card:#ffffff;
+    --ink:#163029; --ink-soft:#4f665f; --ink-faint:#90a59e;
+    --teal:#138a7d; --teal-2:#0e6f64; --teal-deep:#0b524a; --teal-soft:#d8ece8;
+    --teal-grad:linear-gradient(135deg,#19a394,#0e7468);
+    --brass:#c79a52; --brass-2:#a87f3c; --brass-soft:#ecd9ad;
+    --mute:#93b3ac; --err:#c25b43; --line:#dce8e3;
+    --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --shadow:0 16px 34px -28px rgba(11,82,74,.4);
+    --shadow-lg:0 26px 54px -26px rgba(11,82,74,.5);
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; color:var(--ink); font-family:var(--sans); line-height:1.7;
+    background:radial-gradient(820px 480px at 88% 2%, rgba(19,138,125,.12), transparent 62%),
+      radial-gradient(620px 420px at 8% 8%, rgba(199,154,82,.1), transparent 56%),
+      linear-gradient(180deg,#f4f8f4 0%, var(--bg) 42%, #e9f0ec 100%);
+    -webkit-font-smoothing:antialiased}
+  ::selection{color:#fff;background:var(--teal-2)}
+
+  .masthead{position:sticky; top:0; z-index:30; border-bottom:1px solid var(--line);
+    background:rgba(241,245,240,.86); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+  .masthead-in{width:min(1180px,calc(100% - 32px)); margin:0 auto; display:flex; flex-wrap:wrap; gap:12px 18px;
+    align-items:center; justify-content:space-between; padding:12px 0}
+  .mast-title b{font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+  .mast-title small{display:block; color:var(--ink-soft); font-size:12px}
+  .seg{display:inline-flex; padding:3px; border-radius:999px; border:1px solid var(--line); background:#fff}
+  .seg button{border:0; cursor:pointer; font:inherit; font-size:13px; font-weight:700; padding:8px 15px; border-radius:999px;
+    color:var(--ink-soft); background:transparent; transition:background .2s var(--ease), color .2s var(--ease)}
+  body[data-fin="now"] .seg .s-now,
+  body[data-fin="a"] .seg .s-a,
+  body[data-fin="b"] .seg .s-b{color:#fff; background:var(--teal-grad); box-shadow:0 8px 16px -10px rgba(14,111,100,.7)}
+
+  .wrap{width:min(1180px,calc(100% - 32px)); margin:0 auto}
+  .layout{display:grid; grid-template-columns:minmax(0,1fr) 392px; gap:46px; align-items:start; padding:30px 0 60px}
+
+  .note .pill{display:inline-flex; align-items:center; gap:8px; margin-bottom:12px; padding:4px 12px; border-radius:999px;
+    font-size:12px; font-weight:700; color:var(--teal-2); background:var(--teal-soft)}
+  .note h2{margin:0 0 8px; font-family:var(--serif); font-size:clamp(22px,2.6vw,30px); color:var(--teal-deep); line-height:1.25}
+  .note .claim{margin:0 0 6px; font-size:15px; color:var(--ink)}
+  .note .claim b{color:var(--teal-2)}
+  .note .sub{margin:0 0 18px; color:var(--ink-soft); font-size:14px}
+
+  /* 左侧编号图例 */
+  .cues{display:grid; gap:10px; margin-top:8px}
+  .cue-item{display:grid; grid-template-columns:26px 1fr; gap:12px; align-items:start; padding:12px 14px;
+    border:1px solid var(--line); border-radius:12px; background:#fff; box-shadow:var(--shadow)}
+  .cue-num{width:26px; height:26px; display:grid; place-items:center; border-radius:50%; font-size:13px; font-weight:800;
+    color:#fff; background:var(--teal-2)}
+  .cue-item b{display:block; font-size:14px; color:var(--teal-deep)}
+  .cue-item p{margin:2px 0 0; font-size:13px; color:var(--ink-soft)}
+  .cue-item .why{color:var(--brass-2); font-size:12.5px}
+  .now-note{margin-top:8px; padding:12px 14px; border-radius:12px; border:1px dashed var(--line); background:#fbfdfc;
+    font-size:13.5px; color:var(--ink-soft)}
+  .hide{display:none}
+
+  .replay{margin-top:16px; border:1px solid var(--teal-2); color:var(--teal-2); background:transparent; padding:8px 14px;
+    border-radius:10px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:background .18s var(--ease)}
+  .replay:hover{background:rgba(19,138,125,.08)}
+
+  /* 手机框 */
+  .phone-stage{position:sticky; top:80px; display:grid; place-items:center}
+  .phone{width:min(100%,376px); padding:12px; border-radius:42px;
+    background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0)), #071b18;
+    box-shadow:0 40px 90px -48px rgba(7,31,28,.85), 0 0 0 1px rgba(199,154,82,.22) inset}
+  .phone::before{content:""; display:block; width:92px; height:7px; margin:8px auto 11px; border-radius:99px; background:#03110f}
+  .phone-screen{position:relative; height:716px; overflow-y:auto; overflow-x:hidden; border-radius:30px; background:var(--bg);
+    scrollbar-width:thin; scrollbar-color:var(--mute) transparent}
+  .phone-screen::-webkit-scrollbar{width:7px}
+  .phone-screen::-webkit-scrollbar-thumb{background:var(--mute); border-radius:99px}
+
+  .m-topbar{position:sticky; top:0; z-index:8; display:flex; align-items:center; justify-content:space-between; padding:13px 16px;
+    border-bottom:1px solid var(--line); background:rgba(238,244,241,.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+  .m-brand{font-family:var(--serif); font-weight:700; color:var(--teal-deep); font-size:14px}
+  .m-nav{font-size:12px; color:var(--teal-2)}
+  .m-pad{padding:16px 14px 30px}
+
+  /* 屏上编号标记 */
+  .cue{position:relative}
+  .cue > .tag{position:absolute; z-index:6; top:-9px; left:-7px; width:22px; height:22px; display:grid; place-items:center;
+    border-radius:50%; font-size:12px; font-weight:800; color:#fff; background:var(--teal-2); box-shadow:0 4px 10px -4px rgba(0,0,0,.5)}
+  .cue.gold > .tag{background:var(--brass-2)}
+
+  /* 变体显隐 */
+  .v{display:none}
+  body[data-fin="now"] .v.now,
+  body[data-fin="a"] .v.va,
+  body[data-fin="b"] .v.vb{display:block}
+
+  /* 通用组件 */
+  .badge{display:inline-flex; align-items:center; min-height:24px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700}
+  .badge.done{color:#fff; background:var(--teal-grad)}
+  .btn{min-height:46px; display:inline-flex; align-items:center; justify-content:center; width:100%; border:0; border-radius:12px;
+    color:#fff; background:var(--teal-grad); box-shadow:0 12px 22px -12px rgba(14,111,100,.7); font:inherit; font-weight:700; font-size:14.5px; cursor:pointer;
+    transition:filter .16s var(--ease), transform .16s var(--ease)}
+  .btn:active{transform:scale(.97)}
+  .btn.gold{background:linear-gradient(135deg,#d2a85e,#a87f3c); color:#2c2208; box-shadow:0 12px 22px -12px rgba(168,127,60,.6)}
+  .field{width:100%; height:44px; border:1.5px solid var(--line); border-radius:12px; padding:0 12px; background:#fbfdfc; outline:0; font:inherit; font-size:14px}
+  .field:focus{border-color:var(--teal); box-shadow:0 0 0 4px rgba(19,138,125,.12); background:#fff}
+
+  /* ===== 现状（now）：普通折叠简谱 + 终章题 ===== */
+  .now-card{margin-bottom:14px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 10px 24px -14px rgba(11,82,74,.45); overflow:hidden}
+  .now-card .h{display:flex; align-items:center; justify-content:space-between; padding:13px 15px 10px}
+  .now-card .h h4{margin:0; font-family:var(--serif); font-size:15px; color:var(--teal-deep)}
+  .now-card .prompt{margin:0; padding:0 15px; font-family:var(--serif); font-size:17px; line-height:2; color:var(--ink)}
+  .now-card .row{display:grid; grid-template-columns:1fr 96px; gap:8px; padding:13px 15px 16px}
+  .now-fold{border:1px solid var(--line); border-radius:14px; background:#fff; box-shadow:var(--shadow); padding:14px}
+  .now-fold summary{cursor:pointer; list-style:none; display:flex; justify-content:space-between; font-size:14px; color:var(--ink)}
+  .now-fold summary b{font-family:var(--serif); color:var(--teal-deep)}
+  .now-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px}
+  .now-grid img{width:100%; aspect-ratio:3/4.2; object-fit:cover; border:1px solid var(--line); border-radius:8px; background:#fff}
+
+  /* ===== 方案 A · 节目单 ===== */
+  .pb-curtain{margin:-16px -14px 0; padding:30px 18px 22px; color:#eef7f3; position:relative; overflow:hidden;
+    background:radial-gradient(300px 180px at 80% 0%, rgba(199,154,82,.22), transparent 62%), linear-gradient(180deg,#0c453f,#072e2a)}
+  .pb-curtain::after{content:""; position:absolute; left:0; right:0; bottom:0; height:2px; background:linear-gradient(90deg,transparent,var(--brass),transparent)}
+  .pb-eyebrow{margin:0 0 10px; font-family:var(--serif); font-size:11px; letter-spacing:.4em; color:var(--brass-soft)}
+  .pb-title{margin:0; font-family:var(--serif); font-size:34px; letter-spacing:.06em; line-height:1.1}
+  .pb-by{margin:8px 0 0; font-size:12px; color:rgba(238,247,243,.72)}
+  .pb-act{margin:14px 0 0; display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--brass-soft)}
+  .pb-act .ln{width:26px; height:1px; background:var(--brass)}
+
+  .pb-section{margin-top:16px}
+  .pb-label{margin:0 0 10px; font-size:11px; letter-spacing:.14em; color:var(--ink-faint)}
+  /* 回声路径：金线串字 */
+  .pb-path{position:relative; display:flex; align-items:center; gap:0; padding:10px 6px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.72); overflow-x:auto}
+  .pb-node{display:flex; align-items:center; flex:none}
+  .pb-seal{width:40px; height:40px; flex:none; display:grid; place-items:center; border-radius:9px; color:#fff; font-family:var(--serif); font-size:20px;
+    background:linear-gradient(135deg,#19a394,#0e7468); box-shadow:0 8px 16px -10px rgba(14,111,100,.9)}
+  .pb-link{width:26px; height:2px; flex:none; background:repeating-linear-gradient(90deg,var(--brass) 0 6px, transparent 6px 11px)}
+  .pb-arrow{flex:none; margin-left:4px; color:var(--brass-2); font-weight:800}
+  /* 回声原句：整句保留 + 加粗关键字 + 句旁印章着重 */
+  .pb-fold{border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.74); box-shadow:var(--shadow); overflow:hidden}
+  .pb-fold > summary{cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px}
+  .pb-fold > summary::-webkit-details-marker{display:none}
+  .pb-fold-t{font-weight:600; font-size:13px; color:var(--teal-deep)}
+  .pb-fold-i{font-size:12px; color:var(--ink-faint); white-space:nowrap}
+  .pb-fold-i::after{content:"展开 ﹀"}
+  .pb-fold[open] .pb-fold-i::after{content:"收起 ︿"}
+  .pb-fold-body{padding:2px 14px 14px}
+  .pb-echoes{display:grid; gap:11px}
+  .pb-echo{display:grid; grid-template-columns:34px 1fr; gap:12px; align-items:start}
+  .pb-echo .mk{width:34px; height:34px; display:grid; place-items:center; border-radius:8px; color:#fff; font-family:var(--serif); font-size:17px;
+    background:linear-gradient(135deg,#19a394,#0e7468); box-shadow:0 6px 14px -8px rgba(14,111,100,.85)}
+  .pb-echo p{margin:0; font-family:var(--serif); font-size:14.5px; line-height:1.95; color:var(--ink-soft)}
+  .pb-echo p b{color:var(--teal-deep); font-weight:700; background:linear-gradient(transparent 60%, rgba(199,154,82,.32) 0); padding:0 1px; border-radius:1px}
+  /* 曲目条：横滑简谱 */
+  .pb-strip{display:flex; gap:10px; overflow-x:auto; padding:4px 2px 10px; scroll-snap-type:x mandatory}
+  .pb-strip::-webkit-scrollbar{height:6px}
+  .pb-strip::-webkit-scrollbar-thumb{background:var(--mute); border-radius:99px}
+  .pb-page{flex:none; width:118px; scroll-snap-align:center; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:#fff; box-shadow:var(--shadow)}
+  .pb-page img{display:block; width:100%; aspect-ratio:3/4.1; object-fit:cover}
+  .pb-page small{display:block; text-align:center; padding:4px 0 6px; font-size:11px; color:var(--ink-faint)}
+  .pb-hint{margin:6px 0 0; font-size:11px; color:var(--ink-faint); text-align:center}
+  .pb-quest{padding:15px 17px 16px; border:1px solid rgba(199,154,82,.45); border-radius:16px; background:#fff; box-shadow:0 10px 24px -14px rgba(11,82,74,.45)}
+  .pb-quest .q{margin:0; font-family:var(--serif); font-size:14.5px; line-height:1.95; color:var(--ink)}
+  .pb-need{display:inline-flex; margin-top:10px; padding:3px 11px; border-radius:999px; font-size:11px; font-weight:700; color:var(--brass-2); background:var(--brass-soft)}
+  .pb-answer-label{margin:0 0 8px; font-size:12px; color:var(--ink-faint)}
+  .pb-final{margin-top:16px; padding:16px; border-radius:16px; background:#fff; border:1px solid var(--line); box-shadow:0 10px 24px -14px rgba(11,82,74,.45)}
+  .pb-final .q{margin:0 0 12px; font-family:var(--serif); font-size:16px; line-height:1.9; color:var(--ink)}
+  .pb-final .row{display:grid; gap:8px}
+
+  /* ===== 方案 B · 乐谱册 ===== */
+  .sb-head{margin:-16px -14px 14px; padding:22px 18px 16px; text-align:center;
+    background:linear-gradient(180deg,#f3f8f4,#e9f1ec); border-bottom:1px solid var(--line)}
+  .sb-eyebrow{margin:0 0 8px; font-family:var(--serif); font-size:11px; letter-spacing:.36em; color:var(--teal-2)}
+  .sb-title{display:inline-flex; align-items:center; gap:10px; font-family:var(--serif); font-size:26px; color:var(--teal-deep)}
+  .sb-stamp{width:34px; height:34px; display:grid; place-items:center; border-radius:8px; color:#fff; font-family:var(--serif); font-size:18px;
+    background:linear-gradient(135deg,#19a394,#0e7468); box-shadow:0 8px 16px -10px rgba(14,111,100,.9)}
+  /* 歌本主体：大页 + 翻页 + 竖排印章列 */
+  .sb-body{display:grid; grid-template-columns:1fr 56px; gap:12px}
+  .sb-book{position:relative; padding:12px; border-radius:14px; border:1px solid var(--line);
+    background:linear-gradient(135deg,#fdfdfb,#f3f7f3);
+    box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.8)}
+  .sb-book::before{content:""; position:absolute; left:50%; top:10px; bottom:10px; width:1px; background:linear-gradient(180deg,transparent,var(--line),transparent)}
+  .sb-pageimg{width:100%; aspect-ratio:3/3.6; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:#fff}
+  .sb-nav{display:flex; align-items:center; justify-content:space-between; margin-top:10px}
+  .sb-nav button{border:1px solid var(--teal-2); color:var(--teal-2); background:#fff; border-radius:9px; padding:6px 12px; font:inherit; font-size:13px; font-weight:700; cursor:pointer}
+  .sb-nav button:active{transform:scale(.96)}
+  .sb-ind{font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums}
+  /* 竖排回声印章列 */
+  .sb-col{display:flex; flex-direction:column; gap:8px; align-items:center; padding:8px 0; border-left:1px dashed var(--line)}
+  .sb-col small{writing-mode:vertical-rl; font-size:10px; color:var(--ink-faint); letter-spacing:.2em; margin-bottom:2px}
+  .sb-seal{width:36px; height:36px; display:grid; place-items:center; border-radius:8px; color:#fff; font-family:var(--serif); font-size:18px;
+    background:linear-gradient(135deg,#5aa79a,#3c8175); box-shadow:0 6px 14px -8px rgba(14,111,100,.8)}
+  .sb-final{margin-top:16px; padding:16px; border-radius:16px; background:#fff; border:1px solid var(--line); box-shadow:0 10px 24px -14px rgba(11,82,74,.45)}
+  .sb-final .q{margin:0 0 12px; font-family:var(--serif); font-size:16px; line-height:1.9; color:var(--ink)}
+
+  /* 揭示动效 */
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease)}
+  .reveal.in{opacity:1; transform:none}
+
+  .footer{width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:24px 0 56px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:13px}
+
+  @media (max-width:980px){ .layout{grid-template-columns:1fr; gap:26px} .phone-stage{position:relative; top:auto} }
+  @media (prefers-reduced-motion:reduce){ .reveal{opacity:1; transform:none; transition:none} }
+</style>
+</head>
+<body data-fin="a">
+
+<header class="masthead">
+  <div class="masthead-in">
+    <div class="mast-title">
+      <b>终章 · 设计预览</b>
+      <small>同一屏三态对比：现状 / 方案A 节目单 / 方案B 乐谱册。屏上 ①②③④ 对应左侧解释。</small>
+    </div>
+    <div class="seg" role="group" aria-label="终章方案切换">
+      <button class="s-now" type="button" onclick="setFin('now')">现状</button>
+      <button class="s-a" type="button" onclick="setFin('a')">方案A·节目单</button>
+      <button class="s-b" type="button" onclick="setFin('b')">方案B·乐谱册</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <!-- 左：解释 -->
+    <div class="note">
+      <!-- 现状解释 -->
+      <div class="v now">
+        <span class="pill">现状 · 现在长什么样</span>
+        <h2>现在的终章：一道终章题 + 一个折叠的简谱网格</h2>
+        <p class="claim">功能齐全，但**没有"终章"的仪式感**：简谱藏在"展开"里，六枚回声没有出场，和普通答题屏几乎一样。</p>
+        <p class="sub">右侧就是现状示意。下面两个方案，就是要把这块从"又一道题"变成"一场落幕"。</p>
+        <div class="now-note">切到 <b>方案A</b> 或 <b>方案B</b>，屏上会出现带编号的设计区块，左侧逐条解释"改了什么、为什么"。</div>
+      </div>
+
+      <!-- 方案A解释 -->
+      <div class="v va">
+        <span class="pill">方案 A · 节目单（深色幕布）</span>
+        <h2>把终章做成一张演出节目单</h2>
+        <p class="claim">设计主张：<b>庄重落幕</b>。深松石幕布压轴，金色全程克制，只在最后一击亮相。</p>
+        <p class="sub">终章本身是一道谜题，所以顺序按「题面→线索→答题」。对照右侧屏上的 ①②③④⑤：</p>
+        <div class="cues">
+          <div class="cue-item"><span class="cue-num">1</span><div><b>幕布头 · 压轴曲目</b><p>深色幕布 + 歌名《行行重行行》大字。<span class="why">为什么：一进终章先"暗场"，和前面浅色答题屏拉开，给落幕感。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">2</span><div><b>终章题面（真实题面）</b><p>把真实题面放最前：数六个加重字的笔画 → 由高到低排序 → 再到简谱男低音找旋律。<span class="why">为什么：谜题要先讲清任务，玩家才知道下面的线索怎么用。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">3</span><div><b>线索一 · 六段回声原句</b><p>六句整句保留、关键字加粗、句旁印章着重。<span class="why">为什么：题面要数的就是这六个加重字，直接摆到终章，省去翻百宝箱。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">4</span><div><b>线索二 · 简谱曲目条</b><p>五页简谱横滑，点开可翻页。<span class="why">为什么：题面第二步要到《行行重行行》男低音声部找旋律。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">5</span><div><b>压轴提交 · 金按钮</b><p>唯一金色答案框，提交 7 个汉字。<span class="why">为什么：暖铜全程克制，只在这最后一击亮相，焦点最珍贵。</span></p></div></div>
+        </div>
+      </div>
+
+      <!-- 方案B解释 -->
+      <div class="v vb">
+        <span class="pill">方案 B · 乐谱册（浅色纸感）</span>
+        <h2>把终章做成翻开的一本歌本</h2>
+        <p class="claim">设计主张：<b>温柔连贯</b>。延续前面"回声纸条"的纸质语言，简谱是一本能翻页的歌本，六枚回声竖排成"歌词印章列"。</p>
+        <p class="sub">对照右侧屏上的 ①②③④：</p>
+        <div class="cues">
+          <div class="cue-item"><span class="cue-num">1</span><div><b>纸感标题 + 印章</b><p>浅纸底，歌名旁盖一枚松石印章。<span class="why">为什么：和回声纸条同一套纸/印语言，情绪上自然延续。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">2</span><div><b>歌本大页 · 可翻页</b><p>简谱以"翻开的书页"呈现，中缝 + ‹ 翻页 › 实际可点（右侧试试）。<span class="why">为什么：比缩略图网格更像在"读谱"，单页更大更清楚。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">3</span><div><b>回声印章列 · 竖排</b><p>六枚回声竖向排在书侧，像一行歌词题注。<span class="why">为什么：竖排呼应简谱/古诗的阅读方向，安静收束。</span></p></div></div>
+          <div class="cue-item"><span class="cue-num">4</span><div><b>终章题 + 金按钮</b><p>书页下方收一道终章题与金色提交。<span class="why">为什么：保留唯一暖铜焦点，但整体维持浅色不"暗场"。</span></p></div></div>
+        </div>
+      </div>
+
+      <button class="replay" type="button" onclick="replayFin()">▶ 重播揭示动效</button>
+    </div>
+
+    <!-- 右：手机 -->
+    <div class="phone-stage">
+      <div class="phone"><div class="phone-screen" id="finScreen">
+        <div class="m-topbar"><span class="m-brand">终章 · 行行重行行</span><span class="m-nav">活动</span></div>
+
+        <!-- ===== 现状 ===== -->
+        <div class="v now"><div class="m-pad">
+          <div class="now-card">
+            <div class="h"><h4>终章 · 行行重行行</h4><span class="badge done">已解锁</span></div>
+            <p class="prompt">把一路收集的回声连起来，写出终章的答案。</p>
+            <div class="row"><input class="field" placeholder="终章答案"/><button class="btn">提交</button></div>
+          </div>
+          <details class="now-fold" open>
+            <summary><b>《行行重行行》简谱</b><span>展开 ﹀</span></summary>
+            <div class="now-grid">
+              <img src="static/assets/shexi-score-page-1.png" alt="简谱1"/>
+              <img src="static/assets/shexi-score-page-2.png" alt="简谱2"/>
+              <img src="static/assets/shexi-score-page-3.png" alt="简谱3"/>
+              <img src="static/assets/shexi-score-page-4.png" alt="简谱4"/>
+              <img src="static/assets/shexi-score-page-5.png" alt="简谱5"/>
+            </div>
+          </details>
+        </div></div>
+
+        <!-- ===== 方案 A · 节目单 ===== -->
+        <div class="v va"><div class="m-pad" style="padding-top:0">
+          <div class="pb-curtain cue reveal"><span class="tag">1</span>
+            <p class="pb-eyebrow">终 章 · 压 轴</p>
+            <h2 class="pb-title">行行重行行</h2>
+            <p class="pb-by">《古诗十九首》· 全场合唱</p>
+            <span class="pb-act"><span class="ln"></span>谢幕前的最后一程</span>
+          </div>
+
+          <div class="pb-section cue reveal"><span class="tag">2</span>
+            <p class="pb-label">终章题面 · 本场谜题</p>
+            <div class="pb-quest">
+              <p class="q">一路的念念不忘，终会得到回响。打开主线百宝箱，六段主线回声里，各有一个被加重的字；数清它们的笔画，让数字由高到低排成一行。再翻开《行行重行行》，到男低音的声部里寻找同样的起伏。仅仅看数字，在熟悉的旋律里，也能找出那句萦绕心底的歌词。</p>
+              <span class="pb-need">提交 · 7 个汉字</span>
+            </div>
+          </div>
+
+          <div class="pb-section cue reveal"><span class="tag">3</span>
+            <details class="pb-fold">
+              <summary><span class="pb-fold-t">线索一 · 六段主线回声（加重字 + 句旁印章）</span><span class="pb-fold-i"></span></summary>
+              <div class="pb-fold-body">
+                <div class="pb-echoes">
+                  <div class="pb-echo"><span class="mk">社</span><p>初入燕园，你在千万声音中认出反复写下的<b>社</b>字。它像一枚小小的印章，盖在一切的开始。</p></div>
+                  <div class="pb-echo"><span class="mk">右</span><p>你从信箱走到门牌，又看向房间<b>右</b>侧那位沉默的守夜人。这一路很长，但每一个细节都值得回望。</p></div>
+                  <div class="pb-echo"><span class="mk">行</span><p>你一级一级往上走，把脚下的提醒变成继续前<b>行</b>的坐标。许多路也只是这样，从无到有地一步步走来。</p></div>
+                  <div class="pb-echo"><span class="mk">二</span><p>你在<b>二</b>层走廊停下脚步，对田野与课堂都露出会心一笑。</p></div>
+                  <div class="pb-echo"><span class="mk">三</span><p>你在中庭抬头，眼底掠过许多窗口、外机和光影。第<b>三</b>次回望时，也许会发现这栋楼也有自己的呼吸。</p></div>
+                  <div class="pb-echo"><span class="mk">一</span><p>你终于找到那尊安静而屹立的身影，也收下那<b>一</b>份带着清香的祝福。愿离开这里的人，都有顺风、远方和回望时的平和温暖。</p></div>
+                </div>
+                <p class="pb-hint" style="text-align:left">↑ 六段主线回声原句（A1–A6），加重字与百宝箱一致 · 题面正是要数这六个字的笔画</p>
+              </div>
+            </details>
+          </div>
+
+          <div class="pb-section cue reveal"><span class="tag">4</span>
+            <p class="pb-label">线索二 · 《行行重行行》简谱（左右滑动，点开可翻页）</p>
+            <div class="pb-strip">
+              <div class="pb-page"><img src="static/assets/shexi-score-page-1.png" alt="简谱1"/><small>1 / 5</small></div>
+              <div class="pb-page"><img src="static/assets/shexi-score-page-2.png" alt="简谱2"/><small>2 / 5</small></div>
+              <div class="pb-page"><img src="static/assets/shexi-score-page-3.png" alt="简谱3"/><small>3 / 5</small></div>
+              <div class="pb-page"><img src="static/assets/shexi-score-page-4.png" alt="简谱4"/><small>4 / 5</small></div>
+              <div class="pb-page"><img src="static/assets/shexi-score-page-5.png" alt="简谱5"/><small>5 / 5</small></div>
+            </div>
+            <p class="pb-hint">← 横向滑动浏览 ·  点任意页进入大图翻页 →</p>
+          </div>
+
+          <div class="pb-final cue gold reveal"><span class="tag">5</span>
+            <p class="pb-answer-label">写下终章答案</p>
+            <div class="row"><input class="field" placeholder="7 个汉字"/><button class="btn gold">提交终章答案</button></div>
+          </div>
+        </div></div>
+
+        <!-- ===== 方案 B · 乐谱册 ===== -->
+        <div class="v vb"><div class="m-pad" style="padding-top:0">
+          <div class="sb-head cue reveal"><span class="tag">1</span>
+            <p class="sb-eyebrow">终 章</p>
+            <div class="sb-title"><span class="sb-stamp">行</span>行行重行行</div>
+          </div>
+
+          <div class="sb-body">
+            <div class="sb-book cue reveal"><span class="tag">2</span>
+              <img class="sb-pageimg" id="sbImg" src="static/assets/shexi-score-page-1.png" alt="简谱"/>
+              <div class="sb-nav">
+                <button type="button" onclick="sbTurn(-1)">‹ 上一页</button>
+                <span class="sb-ind" id="sbInd">1 / 5</span>
+                <button type="button" onclick="sbTurn(1)">下一页 ›</button>
+              </div>
+            </div>
+            <div class="sb-col cue reveal"><span class="tag">3</span>
+              <small>六枚回声</small>
+              <span class="sb-seal">社</span><span class="sb-seal">右</span><span class="sb-seal">行</span>
+              <span class="sb-seal">二</span><span class="sb-seal">三</span><span class="sb-seal">一</span>
+            </div>
+          </div>
+
+          <div class="sb-final cue gold reveal"><span class="tag">4</span>
+            <p class="q">合上歌本前，写下终章的答案。</p>
+            <div class="row" style="display:grid; gap:8px"><input class="field" placeholder="终章答案"/><button class="btn gold">提交终章答案</button></div>
+          </div>
+        </div></div>
+
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  终章设计预览 · 不改动正式前端。确定方向（A / B / 或两者结合）后，我再写进《计划》并落地到 static/，简谱翻页等现有交互保持不变。
+</footer>
+
+<script>
+  function setFin(m){ document.body.dataset.fin = m; replayFin(); }
+
+  function replayFin(){
+    const screen=document.getElementById('finScreen');
+    screen.scrollTo({top:0, behavior:'auto'});
+    const mode=document.body.dataset.fin;
+    const sel = mode==='a' ? '.v.va' : mode==='b' ? '.v.vb' : '.v.now';
+    const items=[...screen.querySelectorAll(sel+' .reveal')];
+    items.forEach((n,i)=>{ n.classList.remove('in'); n.style.transitionDelay=(i*110)+'ms'; });
+    void screen.offsetHeight;
+    items.forEach(n=>n.classList.add('in'));
+  }
+
+  /* 方案B：歌本翻页（真的可点）*/
+  const sbPages=[1,2,3,4,5]; let sbIdx=0;
+  function sbTurn(d){
+    sbIdx=(sbIdx + d + sbPages.length) % sbPages.length;
+    const img=document.getElementById('sbImg'); const ind=document.getElementById('sbInd');
+    img.style.opacity='0';
+    setTimeout(()=>{ img.src='static/assets/shexi-score-page-'+sbPages[sbIdx]+'.png'; img.style.opacity='1'; }, 120);
+    ind.textContent=(sbIdx+1)+' / 5';
+  }
+  document.getElementById('sbImg').style.transition='opacity .25s var(--ease)';
+
+  window.addEventListener('DOMContentLoaded', ()=>{ replayFin(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>蓝绿松石版 · 审美提升改动预览</title>
+<style>
+  :root{
+    /* 取自真实 static/styles.css 的调色板，保证预览=落地后观感 */
+    --bg:#eef4f1; --bg-2:#e3eeea; --card:#ffffff;
+    --ink:#163029; --ink-soft:#4f665f; --ink-faint:#90a59e;
+    --teal:#138a7d; --teal-2:#0e6f64; --teal-deep:#0b524a; --teal-soft:#d8ece8;
+    --teal-grad:linear-gradient(135deg,#19a394,#0e7468);
+    --brass:#c79a52; --brass-2:#a87f3c; --brass-soft:#ecd9ad;
+    --mute:#93b3ac; --err:#c25b43; --line:#dce8e3;
+    --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --shadow:0 16px 34px -28px rgba(11,82,74,.4);
+    --shadow-lg:0 26px 54px -26px rgba(11,82,74,.5);
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--ink); font-family:var(--sans); line-height:1.7;
+    background:
+      radial-gradient(820px 480px at 88% 2%, rgba(19,138,125,.12), transparent 62%),
+      radial-gradient(620px 420px at 8% 8%, rgba(199,154,82,.1), transparent 56%),
+      linear-gradient(180deg,#f4f8f4 0%, var(--bg) 42%, #e9f0ec 100%);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{color:#fff;background:var(--teal-2)}
+  a{color:var(--teal-2)}
+
+  /* ---------- 顶部说明条 ---------- */
+  .masthead{
+    position:sticky; top:0; z-index:30;
+    border-bottom:1px solid var(--line);
+    background:rgba(241,245,240,.86); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  }
+  .masthead-in{
+    width:min(1180px,calc(100% - 32px)); margin:0 auto;
+    display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; justify-content:space-between;
+    padding:12px 0;
+  }
+  .mast-title{display:flex; flex-direction:column; gap:2px}
+  .mast-title b{font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+  .mast-title small{color:var(--ink-soft); font-size:12px}
+  .toggle{
+    display:inline-flex; padding:3px; border-radius:999px; border:1px solid var(--line);
+    background:#fff; box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .toggle button{
+    border:0; cursor:pointer; font:inherit; font-size:13px; font-weight:700;
+    padding:7px 16px; border-radius:999px; color:var(--ink-soft); background:transparent;
+    transition:background .2s var(--ease), color .2s var(--ease);
+  }
+  body[data-mode="before"] .toggle .t-before,
+  body[data-mode="after"] .toggle .t-after{ color:#fff; background:var(--teal-grad); box-shadow:0 8px 16px -10px rgba(14,111,100,.7) }
+
+  /* ---------- 区块骨架 ---------- */
+  .intro{width:min(1180px,calc(100% - 32px)); margin:26px auto 8px}
+  .intro h1{margin:0 0 8px; font-family:var(--serif); font-size:clamp(24px,3.4vw,38px); color:var(--teal-deep); line-height:1.2}
+  .intro p{margin:0; max-width:760px; color:var(--ink-soft); font-size:14.5px}
+  .intro .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .intro .legend span{display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; font-size:12px; border:1px solid var(--line); background:#fff; color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.add{background:var(--teal)} .dot.keep{background:var(--mute)} .dot.deep{background:var(--teal-deep)}
+
+  .stage{
+    width:min(1180px,calc(100% - 32px)); margin:0 auto; padding:54px 0;
+    display:grid; grid-template-columns:minmax(0,1fr) 392px; gap:46px; align-items:start;
+    border-top:1px solid var(--line);
+  }
+  .stage:first-of-type{border-top:0}
+  .note .kicker{
+    display:inline-flex; align-items:center; gap:8px; margin-bottom:12px;
+    padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700;
+    color:var(--teal-2); background:var(--teal-soft);
+  }
+  .note h2{margin:0 0 8px; font-family:var(--serif); font-size:clamp(22px,2.6vw,30px); color:var(--teal-deep); line-height:1.25}
+  .note .lead{margin:0 0 18px; color:var(--ink-soft); font-size:14.5px}
+  .note h3{margin:18px 0 8px; font-size:13px; letter-spacing:.04em; color:var(--ink-faint); text-transform:none}
+  .note ul{margin:0; padding:0; list-style:none; display:grid; gap:8px}
+  .note li{position:relative; padding-left:20px; font-size:14px; color:var(--ink)}
+  .note li::before{content:""; position:absolute; left:2px; top:.62em; width:8px; height:8px; border-radius:50%; background:var(--teal)}
+  .note li.keep::before{background:var(--mute)}
+  .note li.why{padding-left:0}
+  .note li.why::before{display:none}
+  .why-box{margin-top:10px; padding:12px 14px; border-radius:12px; background:rgba(19,138,125,.06); border:1px solid rgba(19,138,125,.16); font-size:13.5px; color:var(--ink-soft)}
+  .why-box b{color:var(--teal-2)}
+  .tech{margin-top:14px; padding:12px 14px; border-radius:12px; background:#fbfdfc; border:1px dashed var(--line); font-size:12.5px; color:var(--ink-soft); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+  .replay{
+    margin-top:16px; border:1px solid var(--teal-2); color:var(--teal-2); background:transparent;
+    padding:8px 14px; border-radius:10px; font:inherit; font-size:13px; font-weight:700; cursor:pointer;
+    transition:background .18s var(--ease);
+  }
+  .replay:hover{background:rgba(19,138,125,.08)}
+
+  /* ---------- 手机框 ---------- */
+  .phone-stage{position:sticky; top:78px; display:grid; place-items:center}
+  .phone{
+    width:min(100%,376px); padding:12px; border-radius:42px;
+    background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0)), #071b18;
+    box-shadow:0 40px 90px -48px rgba(7,31,28,.85), 0 0 0 1px rgba(199,154,82,.22) inset;
+  }
+  .phone::before{content:""; display:block; width:92px; height:7px; margin:8px auto 11px; border-radius:99px; background:#03110f}
+  .phone-screen{
+    position:relative; height:712px; overflow-y:auto; overflow-x:hidden;
+    border-radius:30px; background:var(--bg); scrollbar-width:thin; scrollbar-color:var(--mute) transparent;
+  }
+  .phone-screen::-webkit-scrollbar{width:7px}
+  .phone-screen::-webkit-scrollbar-thumb{background:var(--mute); border-radius:99px}
+  .scrollhint{position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:6;
+    font-size:11px; color:var(--ink-faint); background:rgba(255,255,255,.78); padding:3px 10px; border-radius:999px; border:1px solid var(--line); pointer-events:none;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px)}
+
+  /* topbar 复刻（真实壳） */
+  .m-topbar{position:sticky; top:0; z-index:8; display:flex; align-items:center; justify-content:space-between;
+    padding:13px 16px; border-bottom:1px solid var(--line); background:rgba(238,244,241,.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+  .m-brand{font-family:var(--serif); font-weight:700; color:var(--teal-deep); font-size:14px}
+  .m-nav{font-size:12px; color:var(--teal-2)}
+  .m-pad{padding:16px 14px 26px}
+
+  /* 变体显隐 */
+  .variant{display:none}
+  body[data-mode="before"] .variant.before{display:block}
+  body[data-mode="after"]  .variant.after{display:block}
+  .after-badge,.before-badge{position:absolute; z-index:7; top:10px; left:10px; font-size:10px; font-weight:700; letter-spacing:.06em;
+    padding:3px 9px; border-radius:999px; color:#fff}
+  .after-badge{background:var(--teal-grad)} .before-badge{background:#8aa49d}
+  .only-after-note{display:none; margin-top:10px}
+  body[data-mode="before"] .only-after-note{display:block; font-size:12.5px; color:var(--ink-faint)}
+
+  /* ========== 通用真实组件样式（题卡/进度/按钮/徽章） ========== */
+  .section-head .eyebrow{margin:0 0 6px; font-family:var(--serif); font-size:12px; letter-spacing:.28em; color:var(--teal-2)}
+  .section-head h1{margin:0; font-family:var(--serif); font-size:23px; line-height:1.3; color:var(--teal-deep)}
+  .section-head .lede{margin:8px 0 0; font-size:13px; color:var(--ink-soft)}
+
+  .login-panel{margin-top:16px; padding:18px; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:var(--shadow); display:grid; gap:12px}
+  .login-panel h2{margin:0; font-family:var(--serif); font-size:17px; color:var(--teal-deep)}
+  .field{width:100%; height:44px; border:1.5px solid var(--line); border-radius:12px; padding:0 12px; background:#fbfdfc; outline:0; font:inherit; font-size:14px; transition:border-color .18s var(--ease), box-shadow .18s var(--ease)}
+  .field:focus{border-color:var(--teal); box-shadow:0 0 0 4px rgba(19,138,125,.12); background:#fff}
+  .btn{min-height:46px; display:inline-flex; align-items:center; justify-content:center; width:100%; border:0; border-radius:12px; color:#fff; background:var(--teal-grad); box-shadow:0 12px 22px -12px rgba(14,111,100,.7); font:inherit; font-weight:700; font-size:14.5px; cursor:pointer; transition:filter .16s var(--ease), transform .16s var(--ease)}
+  .btn:hover{filter:brightness(1.04)} .btn:active{transform:scale(.97)}
+  .btn.secondary{background:transparent; border:1.5px solid var(--teal-2); color:var(--teal-2); box-shadow:none}
+  .btn.gold{background:linear-gradient(135deg,#d2a85e,#a87f3c); color:#2c2208; box-shadow:0 12px 22px -12px rgba(168,127,60,.6)}
+  .btn.small{min-height:40px; font-size:13.5px}
+  .test-entry{margin-top:4px; text-align:center}
+  .test-entry small{font-size:12px; color:var(--ink-faint)}
+  .test-entry a{font-size:12px}
+
+  .summary-panel{padding:16px; border-radius:16px; color:#d6ece7; background:linear-gradient(135deg,var(--teal-deep),#0a443d); box-shadow:0 16px 32px -22px rgba(11,82,74,.6)}
+  .summary-panel .toolbar{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .summary-panel .who{font-family:var(--serif); font-size:15px; color:#eaf5f1}
+  .summary-panel .who small{display:block; font-family:var(--sans); font-size:11px; color:#86bcb2; margin-top:2px}
+  .ghost{border:1px solid #bfe4dd; color:#bfe4dd; background:transparent; border-radius:10px; padding:5px 10px; font:inherit; font-size:12px; cursor:pointer}
+  .progress-bar{height:8px; margin:14px 0 8px; border-radius:99px; background:rgba(255,255,255,.15); overflow:hidden}
+  .progress-bar i{display:block; height:100%; border-radius:inherit; width:34%; background:linear-gradient(90deg,#37cdbb,#19a394); transition:width .9s var(--ease)}
+  .status-row{font-size:12px; color:#a4cdc6}
+  .cooldown{margin-top:8px; font-size:12px; color:#82b2a9}
+  .cooldown.active{color:#f0c6b8}
+  .cooldown .num{font-variant-numeric:tabular-nums}
+
+  .question-card{margin-top:14px; border:1px solid var(--line); border-radius:16px; background:var(--card); box-shadow:0 10px 24px -14px rgba(11,82,74,.45); overflow:hidden}
+  .q-titlerow{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:13px 15px 10px}
+  .q-titlerow h4{margin:0; font-family:var(--serif); font-size:15px; color:var(--teal-deep)}
+  .badge{display:inline-flex; align-items:center; min-height:24px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700}
+  .badge.main{color:var(--teal-2); background:var(--teal-soft)}
+  .badge.bonus{color:#5f7d75; background:#eef3f1}
+  .badge.done{color:#fff; background:var(--teal-grad)}
+  .prompt{margin:0; padding:0 15px; font-family:var(--serif); font-size:17.5px; line-height:2.05; color:var(--ink)}
+  .q-img{margin:14px 15px 0; height:150px; border-radius:10px; overflow:hidden; border:1px solid var(--line); background:#0a1f1c}
+  .q-img img{width:100%; height:100%; object-fit:cover}
+  .form-row{display:grid; grid-template-columns:1fr 96px; gap:8px; padding:13px 15px 16px}
+  .branch-card{border:1px solid rgba(199,154,82,.45)}
+  .branch-card .prompt{font-family:var(--sans); font-size:14.5px; line-height:1.85}
+  .branch-meta{display:flex; flex-wrap:wrap; gap:6px; padding:0 15px 4px}
+  .branch-meta span{font-size:11px; color:#5f7d75; background:#f2f5f3; border-radius:999px; padding:2px 8px}
+
+  .score-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .score-grid img{width:100%; aspect-ratio:3/4.2; object-fit:cover; border:1px solid var(--line); border-radius:8px; background:#fff}
+  .final-band{margin:0 -14px 14px; padding:22px 18px; color:#eaf5f1;
+    background:radial-gradient(280px 170px at 82% 12%, rgba(199,154,82,.16), transparent 60%), linear-gradient(180deg,#0c453f,#082e2a)}
+  .final-band .eyebrow{margin:0 0 6px; font-family:var(--serif); font-size:11px; letter-spacing:.26em; color:var(--brass-soft)}
+  .final-band h4{margin:0; font-family:var(--serif); font-size:22px; line-height:1.28}
+  .chip-wrap{margin:12px 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.7)}
+  .chip-wrap small{display:block; margin-bottom:8px; font-size:11px; color:var(--ink-faint)}
+  .chip-row{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{display:inline-flex; align-items:center; min-height:30px; padding:0 11px; border-radius:999px; font-family:var(--serif); font-size:15px; color:var(--teal-2); background:var(--teal-soft)}
+
+  .score-directory{margin-top:6px; border:1px solid var(--line); border-radius:14px; background:#fff; box-shadow:var(--shadow); padding:14px}
+  .score-directory > .sd-head{display:flex; justify-content:space-between; font-size:13px; color:var(--ink-soft)}
+  .score-directory > .sd-head b{font-family:var(--serif); color:var(--teal-deep)}
+
+  /* 奖励台 */
+  .reward-stage{position:relative; overflow:hidden; min-height:100%; padding:22px 16px; background:radial-gradient(420px 250px at 50% 18%, rgba(19,138,125,.28), transparent 70%), #081f1c}
+  .ticket{position:relative; z-index:2; margin-top:230px; padding:22px 18px; border:1.5px solid var(--brass); border-radius:14px; color:#fff; background:linear-gradient(135deg,#0c453f,#08332e); box-shadow:0 22px 42px -24px rgba(0,0,0,.7)}
+  .ticket::before,.ticket::after{content:""; position:absolute; top:50%; width:18px; height:18px; border-radius:50%; background:#081f1c; transform:translateY(-50%)}
+  .ticket::before{left:-10px} .ticket::after{right:-10px}
+  .ticket small{display:block; margin-bottom:8px; text-align:center; color:var(--brass-soft); font-family:var(--serif); letter-spacing:.26em; font-size:12px}
+  .ticket strong{display:block; text-align:center; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:22px; letter-spacing:.12em}
+  .ticket .award-line{margin-top:10px; text-align:center; font-size:12px; color:#cfeae3}
+  .spark{position:absolute; left:50%; top:30%; width:7px; height:7px; border-radius:50%; color:#37cdbb; background:currentColor; box-shadow:0 0 10px currentColor; transform:translate(-50%,-50%); opacity:0}
+  .spark:nth-child(2n){color:var(--brass)} .spark:nth-child(3n){color:#d9eee9}
+
+  /* ====== 动效：揭示 / 入场 / blur-up ====== */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .6s var(--ease), transform .6s var(--ease)}
+  .reveal.in{opacity:1; transform:none}
+  .blurup{filter:blur(14px); transform:scale(1.04); transition:filter .7s var(--ease), transform .7s var(--ease)}
+  .blurup.loaded{filter:none; transform:none}
+  .kenburns{animation:kb 9s ease-in-out infinite alternate}
+  @keyframes kb{to{transform:scale(1.1) translateX(-10px)}}
+  .fade-up{opacity:0; transform:translateY(14px); animation:fu .8s var(--ease) forwards}
+  @keyframes fu{to{opacity:1; transform:none}}
+  .ticket.run{animation:ticketIn .9s var(--ease) both}
+  @keyframes ticketIn{0%{opacity:0; transform:translateY(34px) scale(.9)} 60%{opacity:1} 100%{opacity:1; transform:none}}
+  .spark.run{animation:burst 1.25s ease-out forwards}
+  @keyframes burst{0%{opacity:0; transform:translate(-50%,-50%) scale(.5)} 14%{opacity:1} 100%{opacity:0; transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(.2)}}
+  .glint{position:relative; overflow:hidden}
+  .glint.run::after{content:""; position:absolute; inset:0; background:linear-gradient(120deg,transparent 30%, rgba(236,217,173,.55) 50%, transparent 70%); transform:translateX(-120%); animation:glint 1.1s var(--ease) forwards}
+  @keyframes glint{to{transform:translateX(120%)}}
+
+  /* ====== 入楼 hero（after） ====== */
+  .entry-hero{position:relative; min-height:392px; display:grid; align-content:end; color:#fff; overflow:hidden;
+    background:linear-gradient(180deg, rgba(7,31,28,.05), rgba(7,31,28,.86)), url("static/assets/a2-zhou-feizhou-mailbox.jpg") center/cover}
+  .entry-hero .hero-img-anim{position:absolute; inset:0; background:url("static/assets/a2-zhou-feizhou-mailbox.jpg") center/cover; z-index:-1}
+  .entry-hero .copy{padding:0 18px 14px}
+  .entry-hero .eyebrow{margin:0 0 8px; font-family:var(--serif); font-size:12px; letter-spacing:.3em; color:#9be1d6}
+  .entry-hero h2{margin:0; font-family:var(--serif); font-size:27px; line-height:1.22}
+  .entry-hero p.sub{margin:10px 0 0; font-size:12.5px; color:rgba(255,255,255,.82)}
+  .entry-frost{margin:-18px 14px 0; position:relative; z-index:2; padding:16px; border-radius:16px;
+    background:rgba(255,255,255,.78); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.6); box-shadow:var(--shadow-lg); display:grid; gap:11px}
+  .entry-frost h3{margin:0; font-family:var(--serif); font-size:16px; color:var(--teal-deep)}
+
+  /* 旧登录（before）就是纯表单 */
+  .before-login{padding:16px 14px}
+
+  /* 轻量氛围：终章/奖励转深，用屏顶细色条暗示 */
+  .stage-tint{height:4px; border-radius:99px; margin:0 0 2px}
+  .stage-tint.final{background:linear-gradient(90deg,var(--teal-deep),var(--brass-2))}
+
+  .footer{width:min(1180px,calc(100% - 32px)); margin:10px auto; padding:26px 0 56px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:13px}
+
+  @media (max-width:980px){
+    .stage{grid-template-columns:1fr; gap:26px}
+    .phone-stage{position:relative; top:auto}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1; transform:none; transition:none}
+    .kenburns,.fade-up,.ticket.run,.spark.run,.glint.run::after{animation:none}
+    .blurup{filter:none; transform:none}
+    .fade-up{opacity:1; transform:none}
+  }
+</style>
+</head>
+<body data-mode="after">
+
+<header class="masthead">
+  <div class="masthead-in">
+    <div class="mast-title">
+      <b>蓝绿松石版 · 审美提升改动预览</b>
+      <small>自包含预览页，不改动真实 static/ 前端。手机框内为「改动后」实样，可上下滚动看动效。</small>
+    </div>
+    <div class="toggle" role="group" aria-label="改动前后对比">
+      <button class="t-before" type="button" onclick="setMode('before')">改动前</button>
+      <button class="t-after" type="button" onclick="setMode('after')">改动后</button>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <h1>聚焦高回报 + 轻量氛围：只补真正缺的，不推翻已有亮点</h1>
+  <p>切换右上角「改动前 / 改动后」直接对比同一屏的差异。纸团、印章、烟花、票根、雾过渡等已实现的亮点保留不动；本轮只做：入楼首屏、答题滚动揭示与吸顶进度、终章节目单、奖励落幕收尾，以及一批低成本细节统一。</p>
+  <div class="legend">
+    <span><i class="dot add"></i>新增 / 改造</span>
+    <span><i class="dot keep"></i>保留现有（不动）</span>
+    <span><i class="dot deep"></i>轻量氛围：仅此节点转深</span>
+  </div>
+</section>
+
+<!-- ============ ① 入楼 ============ -->
+<section class="stage">
+  <div class="note">
+    <span class="kicker">01 · 入楼</span>
+    <h2>首页/登录从「表单」变成「领取路线」的第一幕</h2>
+    <p class="lead">这是当前最大的真实缺口：现在登录屏是纯白文字表单、没有图。改动后用信箱实拍铺底 + 磨砂登录卡，把仪式感提到第一视觉信号。</p>
+    <h3>改了什么</h3>
+    <ul>
+      <li>真实楼内照片（<code>a2-zhou-feizhou-mailbox.jpg</code>）作 hero 背景 + 深松石压暗渐变</li>
+      <li>眉标「理 科 五 号 楼」+ 衬线大标题，营造安静开场</li>
+      <li>学号 / 手机号输入移到磨砂卡上，减少纯白工具感</li>
+      <li class="keep">测试入口视觉降级、不抢主行动线（保留功能）</li>
+    </ul>
+    <div class="why-box"><b>为什么：</b>第一屏决定"这是活动还是后台"。照片 + 磨砂卡让玩家一眼进入毕业叙事，而不是先看到一张表单。</div>
+    <div class="tech">实现：仅改 renderParticipantLogin()，<b>表单字段名/提交 handler/localStorage 全不变</b>；hero 是单列顶部 band，不碰 #app（避免 fixed 弹层错位）。</div>
+    <button class="replay" type="button" onclick="replayEntry()">▶ 重播入场动效</button>
+    <p class="only-after-note">↑ 当前显示的是「改动前」：纯文字表单。切到「改动后」看 hero。</p>
+  </div>
+  <div class="phone-stage">
+    <div class="phone"><div class="phone-screen" id="screen-entry">
+      <span class="after-badge variant after">改动后</span>
+      <span class="before-badge variant before">改动前 · 现状</span>
+
+      <!-- AFTER -->
+      <div class="variant after" id="entryAfter">
+        <div class="m-topbar"><span class="m-brand">定向解密</span><span class="m-nav">活动</span></div>
+        <section class="entry-hero">
+          <div class="hero-img-anim kenburns" aria-hidden="true"></div>
+          <div class="copy fade-up">
+            <p class="eyebrow">理 科 五 号 楼</p>
+            <h2>沿着楼的线索<br/>收集毕业回声</h2>
+            <p class="sub">学号与手机号开启这一程，进度会自动保存。</p>
+          </div>
+        </section>
+        <div class="entry-frost fade-up" style="animation-delay:.12s">
+          <h3>玩家入口</h3>
+          <input class="field" placeholder="请输入学号" inputmode="numeric" />
+          <input class="field" placeholder="请输入手机号" inputmode="numeric" />
+          <button class="btn" type="button">领取路线</button>
+          <div class="test-entry"><small>仅供调试 · <a href="#">测试入口</a></small></div>
+        </div>
+      </div>
+
+      <!-- BEFORE -->
+      <div class="variant before">
+        <div class="m-topbar"><span class="m-brand">定向解密</span><span class="m-nav">活动</span></div>
+        <div class="before-login">
+          <div class="section-head">
+            <p class="eyebrow">社系毕业晚会解密</p>
+            <h1>用学号和手机号开启这一程</h1>
+            <p class="lede">26 届毕业生可获得礼物，其余同学可参与解谜。</p>
+          </div>
+          <div class="login-panel">
+            <h2>玩家入口</h2>
+            <input class="field" placeholder="请输入学号" inputmode="numeric" />
+            <input class="field" placeholder="请输入手机号" inputmode="numeric" />
+            <button class="btn" type="button">进入活动</button>
+            <div class="test-entry"><small>仅供调试 · <a href="#">测试入口</a></small></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ ② 答题 ============ -->
+<section class="stage">
+  <div class="note">
+    <span class="kicker">02 · 答题</span>
+    <h2>「沿楼推进」：进度吸顶 + 题卡滚动揭示</h2>
+    <p class="lead">题卡布局、衬线题面、卡片阴影已是现状。改动后让进度卡吸顶常驻、题卡进入视口时轻微上浮一次、题图模糊转清晰、冷却倒计时定宽不抖。</p>
+    <h3>改了什么</h3>
+    <ul>
+      <li>进度卡 <code>sticky</code> 吸顶，滚动时进度始终可见（手机内向下滚动体验）</li>
+      <li>题卡进入视口淡入上浮 <b>一次</b>（IntersectionObserver，全平台可用）</li>
+      <li>题图 <code>loading=lazy</code> + 模糊→清晰过渡，减少突兀</li>
+      <li>冷却倒计时 <code>tabular-nums</code> 定宽，按钮不再左右抖</li>
+      <li class="keep">主线衬线大字 / 旁枝小字、卡片阴影：保留</li>
+    </ul>
+    <div class="why-box"><b>为什么：</b>把"一屏堆卡片"变成"沿楼一层层推进"；吸顶进度给持续目标感，揭示动效给节奏，又不喧宾夺主。</div>
+    <div class="tech">实现：揭示 transform 只加在题卡自身（不含 fixed 弹层，安全）；reduce-motion 下直接显示终态；每次 renderProject() 末尾对新卡重新 observe。</div>
+    <button class="replay" type="button" onclick="replayQuestion()">▶ 重置并重播揭示</button>
+  </div>
+  <div class="phone-stage">
+    <div class="phone"><div class="phone-screen" id="screen-question">
+      <span class="after-badge variant after">改动后</span>
+      <span class="before-badge variant before">改动前 · 现状</span>
+      <span class="scrollhint">在手机内向下滚动 ↓</span>
+
+      <!-- AFTER -->
+      <div class="variant after">
+        <div class="m-topbar"><span class="m-brand">沿着楼的线索前进</span><span class="m-nav">活动</span></div>
+        <div class="m-pad">
+          <div class="summary-panel" style="position:sticky; top:48px; z-index:5">
+            <div class="toolbar"><span class="who">2300012345<small>学号 · 进度自动保存</small></span><button class="ghost">退出</button></div>
+            <div class="progress-bar"><i></i></div>
+            <div class="status-row">主线 2/6 · 旁枝 0/3</div>
+            <div class="cooldown active">答错冷却 <span class="num">00:18</span> 后可重试</div>
+          </div>
+
+          <article class="question-card reveal">
+            <div class="q-titlerow"><h4>A2 · 一层走廊</h4><span class="badge main">主线</span></div>
+            <p class="prompt">先从飞舟老师信箱里借一个门牌号。找到那扇门后，请读出它属于第几个巡查点。</p>
+            <div class="q-img"><img class="blurup" data-blur src="static/assets/a2-zhou-feizhou-mailbox.jpg" alt="信箱"/></div>
+            <div class="form-row"><input class="field" placeholder="1 位数字"/><button class="btn small">提交</button></div>
+          </article>
+
+          <article class="question-card branch-card reveal">
+            <div class="q-titlerow"><h4>B1 · 旁枝</h4><span class="badge bonus">旁枝</span></div>
+            <div class="branch-meta"><span>难度 ★★☆</span><span>地点 · 二层连廊</span></div>
+            <p class="prompt">谁提出了"文化资本"？把他的姓写进答案。</p>
+            <div class="form-row"><input class="field" placeholder="作答"/><button class="btn small">提交</button></div>
+          </article>
+
+          <article class="question-card reveal">
+            <div class="q-titlerow"><h4>A3 · 二层教室</h4><span class="badge main">主线</span></div>
+            <p class="prompt">把三扇门的编号相乘，结果是通往下一层的口令。</p>
+            <div class="q-img"><img class="blurup" data-blur src="static/assets/a4-field-assassin-comic.jpg" alt="线索图"/></div>
+            <div class="form-row"><input class="field" placeholder="数字"/><button class="btn small">提交</button></div>
+          </article>
+
+          <article class="question-card reveal">
+            <div class="q-titlerow"><h4>A4 · 三层平台</h4><span class="badge main">主线</span></div>
+            <p class="prompt">沿着走廊尽头的窗，数一数挂着几盏灯。</p>
+            <div class="form-row"><input class="field" placeholder="数字"/><button class="btn small">提交</button></div>
+          </article>
+        </div>
+      </div>
+
+      <!-- BEFORE -->
+      <div class="variant before">
+        <div class="m-topbar"><span class="m-brand">沿着楼的线索前进</span><span class="m-nav">活动</span></div>
+        <div class="m-pad">
+          <div class="summary-panel">
+            <div class="toolbar"><span class="who">2300012345<small>学号</small></span><button class="ghost">退出</button></div>
+            <div class="progress-bar"><i></i></div>
+            <div class="status-row">主线 2/6 · 旁枝 0/3</div>
+            <div class="cooldown active">答错冷却 18 秒后可重试</div>
+          </div>
+          <article class="question-card">
+            <div class="q-titlerow"><h4>A2 · 一层走廊</h4><span class="badge main">主线</span></div>
+            <p class="prompt">先从飞舟老师信箱里借一个门牌号。找到那扇门后，请读出它属于第几个巡查点。</p>
+            <div class="q-img"><img src="static/assets/a2-zhou-feizhou-mailbox.jpg" alt="信箱"/></div>
+            <div class="form-row"><input class="field" placeholder="1 位数字"/><button class="btn small">提交</button></div>
+          </article>
+          <article class="question-card branch-card">
+            <div class="q-titlerow"><h4>B1 · 旁枝</h4><span class="badge bonus">旁枝</span></div>
+            <div class="branch-meta"><span>难度 ★★☆</span><span>地点 · 二层连廊</span></div>
+            <p class="prompt">谁提出了"文化资本"？把他的姓写进答案。</p>
+            <div class="form-row"><input class="field" placeholder="作答"/><button class="btn small">提交</button></div>
+          </article>
+          <article class="question-card">
+            <div class="q-titlerow"><h4>A3 · 二层教室</h4><span class="badge main">主线</span></div>
+            <p class="prompt">把三扇门的编号相乘，结果是通往下一层的口令。</p>
+            <div class="q-img"><img src="static/assets/a4-field-assassin-comic.jpg" alt="线索图"/></div>
+            <div class="form-row"><input class="field" placeholder="数字"/><button class="btn small">提交</button></div>
+          </article>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ ④ 终章 ============ -->
+<section class="stage">
+  <div class="note">
+    <span class="kicker">03 · 终章 <i class="dot deep" style="margin-left:4px"></i></span>
+    <h2>终章做成「节目单」：深幕布 + 简谱册 + 六字回声路径</h2>
+    <p class="lead">现状是普通折叠的简谱网格。改动后给终章一个深色幕布头（轻量氛围允许的转深节点），简谱缩略图错峰揭示，并把六枚回声印章排成一条"路径"。</p>
+    <h3>改了什么</h3>
+    <ul>
+      <li>深色幕布头 <code>.final-band</code>（深松石 + 暖铜微光），仪式感转深</li>
+      <li>简谱缩略图按序错峰淡入，像翻开乐谱册</li>
+      <li>新增「六枚回声印章」路径，呼应前面收集的高亮字</li>
+      <li class="keep">点开大图 ←/→ 翻页、键盘方向键：保留不变</li>
+    </ul>
+    <div class="why-box"><b>为什么：</b>终章是情绪汇聚点。把分散的回声收束成一条可见路径 + 节目单框架，让"通关"更像一场落幕而非又一道题。</div>
+    <div class="tech">轻量氛围：仅终章/奖励两个节点转深，用 #app[data-stage] 驱动；入场/主线/后台维持统一配色，不做多套皮肤。</div>
+    <button class="replay" type="button" onclick="replayFinal()">▶ 重播错峰揭示</button>
+  </div>
+  <div class="phone-stage">
+    <div class="phone"><div class="phone-screen" id="screen-final">
+      <span class="after-badge">改动后</span>
+      <div class="m-topbar"><span class="m-brand">终章 · 行行重行行</span><span class="m-nav">活动</span></div>
+      <div class="m-pad">
+        <div class="final-band">
+          <p class="eyebrow">终 章</p>
+          <h4>一路的念念不忘<br/>终会得到回响</h4>
+        </div>
+        <div class="score-directory">
+          <div class="sd-head"><b>《行行重行行》简谱</b><span>共 5 页 · 点开可翻页</span></div>
+          <div class="score-grid" style="margin-top:10px" id="finalGrid">
+            <img class="reveal" src="static/assets/shexi-score-page-1.png" alt="简谱1"/>
+            <img class="reveal" src="static/assets/shexi-score-page-2.png" alt="简谱2"/>
+            <img class="reveal" src="static/assets/shexi-score-page-3.png" alt="简谱3"/>
+            <img class="reveal" src="static/assets/shexi-score-page-4.png" alt="简谱4"/>
+            <img class="reveal" src="static/assets/shexi-score-page-5.png" alt="简谱5"/>
+          </div>
+        </div>
+        <div class="chip-wrap reveal">
+          <small>六枚回声印章 · 你一路收集的字</small>
+          <div class="chip-row">
+            <span class="chip">社</span><span class="chip">右</span><span class="chip">行</span>
+            <span class="chip">二</span><span class="chip">三</span><span class="chip">一</span>
+          </div>
+        </div>
+        <button class="btn gold reveal" type="button">提交终章答案</button>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ ⑤ 奖励 ============ -->
+<section class="stage">
+  <div class="note">
+    <span class="kicker">04 · 奖励 <i class="dot deep" style="margin-left:4px"></i></span>
+    <h2>落幕：票根入场 + 粒子收束到凭证附近</h2>
+    <p class="lead">烟花、暖铜边票根、转盘 5s settle 都已实现。改动后只做收尾：票根登场动画、火花原点收束到票根上方，让最终凭证更像可纪念物。</p>
+    <h3>改了什么</h3>
+    <ul>
+      <li>票根 <code>ticketIn</code> 登场动画（上浮缩放一次）</li>
+      <li>火花粒子原点收束到票根附近，而非满屏</li>
+      <li class="keep">等宽码 + 暖铜边 + 撕孔、烟花、转盘节奏：保留</li>
+    </ul>
+    <div class="why-box"><b>为什么：</b>这是全流程唯一该放大动效的地方。把"奖励出现"做成一个有重量的落幕瞬间，强化"我完成了"的记忆点。</div>
+    <div class="tech">改动量最小——多数已实现，仅加一段入场 keyframe + 调整粒子原点。</div>
+    <button class="replay" type="button" onclick="replayReward()">▶ 重播落幕</button>
+  </div>
+  <div class="phone-stage">
+    <div class="phone"><div class="phone-screen" id="screen-reward">
+      <span class="after-badge">改动后</span>
+      <div class="reward-stage" id="rewardStage">
+        <div class="ticket" id="ticket">
+          <small>完 成 凭 证</small>
+          <strong>SX-7Q3M-A1K9</strong>
+          <div class="award-line">一等奖 · 请向工作人员出示此码核销</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<footer class="footer">
+  预览页 · 不改动正式前端。确认方向后，我再按《计划》落到 static/styles.css 与 static/app.js（保持所有后端交互不变）。
+</footer>
+
+<script>
+  function setMode(m){ document.body.dataset.mode = m; replayEntry(); replayQuestion(); }
+
+  /* —— 通用：把某容器内 .reveal 错峰显示 —— */
+  function revealIn(container, opts){
+    opts = opts || {};
+    const items = [...container.querySelectorAll('.reveal')];
+    items.forEach((n,i)=>{
+      n.classList.remove('in');
+      n.style.transitionDelay = (opts.stagger ? (i*(opts.step||90))+'ms' : '0ms');
+    });
+    // 强制重排后再加 in，保证可重播
+    void container.offsetHeight;
+    items.forEach(n=>n.classList.add('in'));
+  }
+  /* blur-up：图片加载完成（或已缓存）后去模糊 */
+  function armBlur(scope){
+    scope.querySelectorAll('img[data-blur]').forEach(img=>{
+      img.classList.remove('loaded');
+      const done=()=>img.classList.add('loaded');
+      if(img.complete && img.naturalWidth>0){ setTimeout(done, 260); }
+      else { img.addEventListener('load', ()=>setTimeout(done,120), {once:true}); }
+    });
+  }
+
+  /* —— 各屏 IntersectionObserver（root=手机屏，滚动到才揭示）—— */
+  function observeScreen(screenId){
+    const screen = document.getElementById(screenId);
+    if(!screen) return;
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+    }, { root: screen, threshold:0.18, rootMargin:'0px 0px -8% 0px' });
+    screen.querySelectorAll('.reveal').forEach(n=>io.observe(n));
+  }
+
+  /* —— 重播器 —— */
+  function replayEntry(){
+    const s=document.querySelector('body[data-mode] #entryAfter');
+    if(!s || document.body.dataset.mode!=='after') return;
+    s.querySelectorAll('.fade-up').forEach(n=>{ n.style.animation='none'; void n.offsetHeight; n.style.animation=''; });
+    armBlur(s);
+  }
+  let qObserved=false;
+  function replayQuestion(){
+    const screen=document.getElementById('screen-question');
+    screen.scrollTo({top:0, behavior:'auto'});
+    screen.querySelectorAll('.reveal').forEach(n=>n.classList.remove('in'));
+    armBlur(screen);
+    // 首张立即可见，其余靠滚动；并（重新）接 IO
+    requestAnimationFrame(()=>{
+      const first=screen.querySelector('.variant.after .reveal');
+      if(first && document.body.dataset.mode==='after') first.classList.add('in');
+    });
+  }
+  function replayFinal(){
+    const screen=document.getElementById('screen-final');
+    screen.scrollTo({top:0, behavior:'auto'});
+    armBlur(screen);
+    revealIn(screen, {stagger:true, step:110});
+  }
+  function replayReward(){
+    const stage=document.getElementById('rewardStage');
+    // 清旧火花
+    stage.querySelectorAll('.spark').forEach(s=>s.remove());
+    const t=document.getElementById('ticket');
+    t.classList.remove('run'); void t.offsetHeight; t.classList.add('run');
+    // 生成收束在票根上方的火花
+    const N=14;
+    for(let i=0;i<N;i++){
+      const sp=document.createElement('span'); sp.className='spark';
+      const ang=(Math.PI*2*i)/N + (i%2?0.3:0);
+      const r=70+ (i%4)*16;
+      sp.style.setProperty('--x', Math.cos(ang)*r + 'px');
+      sp.style.setProperty('--y', (Math.sin(ang)*r - 10) + 'px');
+      sp.style.animationDelay=(i*40)+'ms';
+      stage.appendChild(sp);
+      void sp.offsetHeight; sp.classList.add('run');
+    }
+  }
+
+  /* 初始化 */
+  window.addEventListener('DOMContentLoaded', ()=>{
+    observeScreen('screen-question');
+    observeScreen('screen-final');
+    replayEntry();
+    // 首张题卡进入
+    setTimeout(()=>{ const f=document.querySelector('#screen-question .variant.after .reveal'); if(f) f.classList.add('in'); }, 200);
+    armBlur(document.getElementById('screen-final'));
+    revealIn(document.getElementById('screen-final'), {stagger:true, step:110});
+    // 奖励：进入视口自动播一次
+    const rio=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting){ replayReward(); rio.disconnect(); } }); }, {threshold:.4});
+    rio.observe(document.getElementById('screen-reward'));
+  });
+</script>
+</body>
+</html>

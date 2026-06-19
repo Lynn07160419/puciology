@@ -1,0 +1,1755 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>蓝绿松石版 · 前端审美提升方案</title>
+<style>
+  :root {
+    --bg: #f1f5f0;
+    --paper: #fbfcf8;
+    --paper-2: #eef4f1;
+    --ink: #142d27;
+    --ink-soft: #4e665f;
+    --ink-faint: #8ba09a;
+    --line: rgba(33, 77, 67, 0.14);
+    --teal: #138a7d;
+    --teal-2: #0e6f64;
+    --teal-deep: #083f39;
+    --mint: #d9eee9;
+    --brass: #c79a52;
+    --brass-2: #9b7133;
+    --clay: #b85f49;
+    --night: #071f1c;
+    --blue: #2e596f;
+    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+    --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --shadow: 0 18px 40px -30px rgba(8, 63, 57, 0.45);
+    --shadow-strong: 0 32px 80px -44px rgba(7, 31, 28, 0.62);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.7;
+    background:
+      radial-gradient(820px 500px at 88% 4%, rgba(19, 138, 125, 0.14), transparent 64%),
+      radial-gradient(620px 420px at 12% 10%, rgba(199, 154, 82, 0.13), transparent 58%),
+      linear-gradient(180deg, #f6f8f3 0%, var(--bg) 38%, #e9f0ec 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    color: #fff;
+    background: var(--teal-2);
+  }
+
+  a {
+    color: inherit;
+    text-decoration-color: rgba(19, 138, 125, 0.38);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: color 180ms ease, text-decoration-color 180ms ease;
+  }
+
+  a:hover {
+    color: var(--teal-2);
+    text-decoration-color: var(--teal-2);
+  }
+
+  button {
+    font: inherit;
+  }
+
+  .cursor-glow {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    width: 220px;
+    height: 220px;
+    pointer-events: none;
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(55, 205, 187, 0.2), transparent 68%);
+    filter: blur(2px);
+    transition: opacity 220ms ease;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero {
+    min-height: 92svh;
+    display: grid;
+    align-items: end;
+    color: #f7fbf8;
+    background:
+      linear-gradient(90deg, rgba(4, 25, 22, 0.86) 0%, rgba(4, 25, 22, 0.68) 38%, rgba(4, 25, 22, 0.18) 100%),
+      linear-gradient(0deg, rgba(4, 25, 22, 0.84) 0%, transparent 38%),
+      url("static/assets/a2-zhou-feizhou-mailbox.jpg") center / cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .hero-inner {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 72px 0 58px;
+  }
+
+  .eyebrow {
+    margin: 0 0 14px;
+    color: #9be1d6;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+  }
+
+  .hero h1 {
+    max-width: 860px;
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(40px, 7vw, 86px);
+    line-height: 1.05;
+    font-weight: 650;
+    letter-spacing: 0;
+  }
+
+  .hero-desc {
+    max-width: 760px;
+    margin: 22px 0 0;
+    color: rgba(247, 251, 248, 0.86);
+    font-size: clamp(15px, 1.6vw, 18px);
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .hero-meta span {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid rgba(216, 236, 232, 0.38);
+    border-radius: 999px;
+    color: #d9eee9;
+    background: rgba(7, 31, 28, 0.28);
+    backdrop-filter: blur(10px);
+    font-size: 12px;
+  }
+
+  .scroll-cue {
+    margin-top: 56px;
+    color: rgba(247, 251, 248, 0.68);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+  }
+
+  .toc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--line);
+    background: rgba(241, 245, 240, 0.84);
+    backdrop-filter: blur(16px);
+  }
+
+  .toc-inner {
+    width: min(1160px, calc(100% - 32px));
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 0;
+    scrollbar-width: none;
+  }
+
+  .toc-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toc a {
+    flex: none;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 13px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .toc a:hover,
+  .toc a.is-active {
+    color: var(--teal-deep);
+    border-color: rgba(19, 138, 125, 0.28);
+    background: rgba(216, 236, 232, 0.72);
+  }
+
+  .wrap {
+    width: min(1160px, calc(100% - 32px));
+    margin: 0 auto;
+  }
+
+  .section {
+    padding: 86px 0;
+  }
+
+  .section.compact {
+    padding-top: 40px;
+  }
+
+  .section-head {
+    max-width: 760px;
+    margin-bottom: 28px;
+  }
+
+  .section-head h2 {
+    margin: 0;
+    color: var(--teal-deep);
+    font-family: var(--serif);
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1.18;
+    letter-spacing: 0;
+  }
+
+  .section-head p {
+    margin: 14px 0 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(251, 252, 248, 0.82);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+  }
+
+  .finding {
+    grid-column: span 4;
+    padding: 22px;
+    min-height: 210px;
+  }
+
+  .finding b,
+  .tech-card b,
+  .reference b {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--teal-deep);
+    font-family: var(--serif);
+    font-size: 18px;
+  }
+
+  .finding p,
+  .tech-card p,
+  .reference p,
+  .step-copy p,
+  .detail-card p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .signal {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: var(--teal-2);
+    background: var(--mint);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .tech-card {
+    grid-column: span 3;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tech-card::after {
+    content: "";
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 0;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--teal), var(--brass), var(--blue));
+    transform: scaleX(0.22);
+    transform-origin: left;
+    transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .tech-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .mini-motion {
+    height: 86px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(19, 138, 125, 0.16), transparent 34%),
+      radial-gradient(circle at 76% 62%, rgba(199, 154, 82, 0.18), transparent 32%),
+      #f6faf7;
+  }
+
+  .orb-line {
+    width: 148px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(19, 138, 125, 0.14);
+    position: relative;
+  }
+
+  .orb-line i {
+    position: absolute;
+    inset: -7px auto auto 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 0 8px rgba(19, 138, 125, 0.12);
+    animation: glide 2.8s cubic-bezier(0.2, 0.9, 0.2, 1) infinite;
+  }
+
+  @keyframes glide {
+    0%, 100% { transform: translateX(0) scale(0.92); }
+    48% { transform: translateX(126px) scale(1.04); }
+  }
+
+  .texture-demo {
+    width: 150px;
+    height: 58px;
+    border: 1px solid rgba(33, 77, 67, 0.12);
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.42)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='.28'/%3E%3C/svg%3E");
+    box-shadow:
+      0 12px 24px -18px rgba(8, 63, 57, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -20px 38px rgba(19, 138, 125, 0.05);
+  }
+
+  .pulse-button {
+    min-width: 138px;
+    min-height: 42px;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(135deg, #19a394, #0e7468);
+    box-shadow: 0 14px 26px -16px rgba(14, 111, 100, 0.75);
+    cursor: pointer;
+    transform: translateY(0);
+    transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 160ms ease;
+  }
+
+  .pulse-button:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .pulse-button:active {
+    transform: scale(0.96);
+  }
+
+  .focus-demo {
+    width: min(100%, 180px);
+    height: 42px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.86);
+    outline: 0;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .focus-demo:focus {
+    border-color: var(--teal);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(19, 138, 125, 0.12);
+  }
+
+  .references {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .reference {
+    padding: 18px;
+  }
+
+  .reference small {
+    display: block;
+    margin-top: 14px;
+    color: var(--ink-faint);
+  }
+
+  .story-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 430px;
+    gap: 52px;
+    align-items: start;
+  }
+
+  .story-copy {
+    display: grid;
+    gap: 28px;
+  }
+
+  .story-step {
+    min-height: 58vh;
+    display: grid;
+    align-content: center;
+    border-top: 1px solid var(--line);
+    padding: 56px 0;
+  }
+
+  .step-no {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: 14px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--teal-deep);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .step-copy h3 {
+    margin: 0 0 12px;
+    color: var(--teal-deep);
+    font-family: var(--serif);
+    font-size: clamp(24px, 3vw, 34px);
+    line-height: 1.2;
+  }
+
+  .step-list {
+    display: grid;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .step-list li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .step-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.78em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brass);
+  }
+
+  .phone-stage {
+    position: sticky;
+    top: 78px;
+    min-height: calc(100svh - 98px);
+    display: grid;
+    place-items: center;
+  }
+
+  .phone {
+    width: min(100%, 390px);
+    padding: 12px;
+    border-radius: 42px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0)),
+      #071b18;
+    box-shadow:
+      0 38px 90px -46px rgba(7, 31, 28, 0.82),
+      0 0 0 1px rgba(199, 154, 82, 0.24) inset;
+  }
+
+  .phone::before {
+    content: "";
+    display: block;
+    width: 96px;
+    height: 7px;
+    margin: 10px auto 11px;
+    border-radius: 99px;
+    background: #03110f;
+  }
+
+  .phone-screen {
+    position: relative;
+    height: 710px;
+    overflow: hidden;
+    border-radius: 30px;
+    background: var(--paper-2);
+  }
+
+  .phone-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(320px 220px at var(--mx, 70%) var(--my, 18%), rgba(55, 205, 187, 0.18), transparent 68%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 28%);
+    mix-blend-mode: screen;
+  }
+
+  .screen-scene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(4px);
+    transition: opacity 420ms ease, transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 420ms ease;
+    pointer-events: none;
+  }
+
+  .screen-scene.is-on {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .mini-top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 18px 12px;
+    border-bottom: 1px solid rgba(220, 232, 227, 0.86);
+    background: rgba(238, 244, 241, 0.82);
+    backdrop-filter: blur(10px);
+  }
+
+  .mini-brand {
+    color: var(--teal-deep);
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .mini-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--brass);
+    box-shadow: 0 0 0 5px rgba(199, 154, 82, 0.14);
+  }
+
+  .mini-body {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    padding: 20px 18px 28px;
+  }
+
+  .scene-hero .mini-body {
+    padding: 0;
+    display: grid;
+    align-content: end;
+    background:
+      linear-gradient(180deg, rgba(7, 31, 28, 0.06), rgba(7, 31, 28, 0.82)),
+      url("static/assets/a2-zhou-feizhou-mailbox.jpg") center / cover;
+  }
+
+  .entry-copy {
+    padding: 220px 22px 28px;
+    color: #fff;
+  }
+
+  .entry-copy p {
+    margin: 0 0 10px;
+    color: #9be1d6;
+    font-family: var(--serif);
+    font-size: 12px;
+    letter-spacing: 0.28em;
+  }
+
+  .entry-copy h4 {
+    margin: 0 0 12px;
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1.22;
+  }
+
+  .entry-copy span {
+    display: block;
+    margin-bottom: 18px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 13px;
+  }
+
+  .mini-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(135deg, #20aa9c, #0d7065);
+    box-shadow: 0 14px 24px -16px rgba(14, 111, 100, 0.86);
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 160ms ease, filter 160ms ease;
+  }
+
+  .mini-btn:active {
+    transform: scale(0.96);
+  }
+
+  .progress-mini {
+    padding: 16px;
+    border-radius: 8px;
+    color: #d6ece7;
+    background: linear-gradient(135deg, var(--teal-deep), #0a443d);
+    box-shadow: 0 18px 30px -24px rgba(8, 63, 57, 0.72);
+  }
+
+  .progress-line {
+    height: 8px;
+    margin: 12px 0 10px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .progress-line i {
+    display: block;
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #37cdbb, #19a394);
+    animation: fillProgress 2.8s ease infinite alternate;
+  }
+
+  @keyframes fillProgress {
+    to { width: 62%; }
+  }
+
+  .question-mini {
+    margin-top: 14px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: var(--shadow);
+  }
+
+  .question-mini header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 15px 11px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .question-mini h4 {
+    margin: 0;
+    color: var(--teal-deep);
+    font-family: var(--serif);
+    font-size: 15px;
+  }
+
+  .badge {
+    display: inline-flex;
+    min-height: 24px;
+    align-items: center;
+    border-radius: 999px;
+    padding: 2px 10px;
+    color: var(--teal-2);
+    background: var(--mint);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .question-mini .qcopy {
+    padding: 15px;
+  }
+
+  .question-mini p {
+    margin: 0 0 12px;
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.9;
+  }
+
+  .shot {
+    height: 132px;
+    margin: 0 0 14px;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #000;
+  }
+
+  .shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.06);
+    animation: slowPan 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes slowPan {
+    to { transform: scale(1.13) translateX(-12px); }
+  }
+
+  .answer-row {
+    display: grid;
+    grid-template-columns: 1fr 88px;
+    gap: 8px;
+  }
+
+  .mini-input {
+    min-width: 0;
+    height: 42px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+    background: #fbfdfc;
+    outline: 0;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .mini-input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 4px rgba(19, 138, 125, 0.12);
+  }
+
+  .echo-stage {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 24px 18px;
+    background: radial-gradient(90% 54% at 50% 34%, rgba(19, 138, 125, 0.24), transparent 72%), #09231f;
+  }
+
+  .paper {
+    position: relative;
+    padding: 24px 20px 22px;
+    border: 1px solid rgba(220, 232, 227, 0.8);
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.68)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='.25'/%3E%3C/svg%3E");
+    box-shadow: 0 30px 52px -30px rgba(0, 0, 0, 0.6);
+    transform-origin: 50% 50%;
+  }
+
+  .scene-echo.is-on .paper {
+    animation: paperIn 900ms cubic-bezier(0.2, 0.82, 0.2, 1) both;
+  }
+
+  @keyframes paperIn {
+    0% { opacity: 0; transform: scale(0.2) rotate(-18deg); border-radius: 50%; }
+    54% { opacity: 1; transform: scale(1.05) rotate(2deg); border-radius: 18px; }
+    100% { transform: scale(1) rotate(0); border-radius: 8px; }
+  }
+
+  .seal {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 15px;
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(135deg, #19a394, #0e7468);
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 700;
+    box-shadow: 0 10px 22px -14px rgba(14, 111, 100, 0.9);
+  }
+
+  .paper h4 {
+    margin: 0 0 12px;
+    text-align: center;
+    color: var(--teal-2);
+    font-family: var(--serif);
+    font-size: 12px;
+    letter-spacing: 0.28em;
+  }
+
+  .paper p {
+    margin: 0 0 18px;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 2;
+  }
+
+  .score-preview {
+    display: grid;
+    gap: 12px;
+  }
+
+  .final-band {
+    margin: -20px -18px 16px;
+    padding: 24px 18px;
+    color: #eaf5f1;
+    background:
+      radial-gradient(280px 180px at 82% 12%, rgba(199, 154, 82, 0.15), transparent 60%),
+      linear-gradient(180deg, #0c453f, #082e2a);
+  }
+
+  .final-band h4 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .score-grid img {
+    width: 100%;
+    aspect-ratio: 3 / 4.2;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  .lyric-path {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.78);
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .chip {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--teal-2);
+    background: var(--mint);
+    font-family: var(--serif);
+    font-size: 13px;
+  }
+
+  .reward-stage {
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    padding: 24px 18px;
+    background:
+      radial-gradient(420px 260px at 50% 20%, rgba(19, 138, 125, 0.28), transparent 70%),
+      #081f1c;
+  }
+
+  .spark {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    left: 50%;
+    top: 28%;
+    border-radius: 50%;
+    color: #37cdbb;
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+    animation: burst 1.35s ease-out infinite;
+    animation-delay: var(--delay);
+    transform: translate(-50%, -50%);
+  }
+
+  .spark:nth-child(2n) { color: var(--brass); top: 22%; left: 34%; }
+  .spark:nth-child(3n) { color: #d9eee9; top: 36%; left: 68%; }
+
+  @keyframes burst {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    14% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.18); }
+  }
+
+  .ticket {
+    position: relative;
+    z-index: 1;
+    margin-top: 240px;
+    padding: 22px 18px;
+    border: 1.5px solid var(--brass);
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(135deg, #0c453f, #08332e);
+    box-shadow: 0 22px 42px -24px rgba(0, 0, 0, 0.7);
+  }
+
+  .ticket::before,
+  .ticket::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #081f1c;
+    transform: translateY(-50%);
+  }
+
+  .ticket::before { left: -10px; }
+  .ticket::after { right: -10px; }
+
+  .ticket small {
+    display: block;
+    margin-bottom: 8px;
+    text-align: center;
+    color: var(--brass);
+    font-family: var(--serif);
+    letter-spacing: 0.26em;
+  }
+
+  .ticket strong {
+    display: block;
+    text-align: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .atmosphere-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin: 28px 0 0;
+  }
+
+  .atmosphere-card {
+    min-height: 190px;
+    grid-column: span 2;
+    display: grid;
+    align-content: end;
+    gap: 10px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 8px;
+    color: var(--tone-fg);
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.2) 100%),
+      radial-gradient(180px 120px at 82% 16%, var(--tone-glow), transparent 70%),
+      var(--tone-bg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .atmosphere-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .atmosphere-card b,
+  .atmosphere-card p,
+  .atmosphere-card span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .atmosphere-card span {
+    width: fit-content;
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--tone-chip);
+    background: rgba(255, 255, 255, 0.74);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .atmosphere-card b {
+    display: block;
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 18px;
+  }
+
+  .atmosphere-card p {
+    margin: 0;
+    color: var(--tone-fg);
+    opacity: 0.82;
+    font-size: 13px;
+  }
+
+  .tone-entry {
+    --tone-bg: #eaf3ef;
+    --tone-fg: #113a34;
+    --tone-chip: #0e6f64;
+    --tone-glow: rgba(199, 154, 82, 0.34);
+  }
+
+  .tone-main {
+    --tone-bg: #f8fbf8;
+    --tone-fg: #163029;
+    --tone-chip: #138a7d;
+    --tone-glow: rgba(55, 205, 187, 0.28);
+  }
+
+  .tone-error {
+    --tone-bg: #f8ede9;
+    --tone-fg: #5e2a1f;
+    --tone-chip: #b85f49;
+    --tone-glow: rgba(184, 95, 73, 0.26);
+  }
+
+  .tone-echo {
+    --tone-bg: #09231f;
+    --tone-fg: #eaf8f4;
+    --tone-chip: #0e6f64;
+    --tone-glow: rgba(55, 205, 187, 0.32);
+  }
+
+  .tone-final {
+    --tone-bg: #0c453f;
+    --tone-fg: #f3f8f5;
+    --tone-chip: #9b7133;
+    --tone-glow: rgba(199, 154, 82, 0.34);
+  }
+
+  .tone-admin {
+    --tone-bg: #e3eeea;
+    --tone-fg: #163029;
+    --tone-chip: #2e596f;
+    --tone-glow: rgba(46, 89, 111, 0.22);
+  }
+
+  .detail-card {
+    padding: 18px;
+  }
+
+  .detail-card b {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--teal-deep);
+    font-family: var(--serif);
+  }
+
+  .roadmap {
+    display: grid;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .roadmap-row {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 14px;
+    align-items: start;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(251, 252, 248, 0.72);
+  }
+
+  .roadmap-row time {
+    color: var(--brass-2);
+    font-family: var(--serif);
+    font-weight: 700;
+  }
+
+  .roadmap-row p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .footer {
+    padding: 34px 0 54px;
+    color: var(--ink-faint);
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 520ms ease, transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @supports (animation-timeline: view()) {
+    .scroll-mark {
+      animation: markIn both;
+      animation-timeline: view();
+      animation-range: entry 12% cover 34%;
+    }
+  }
+
+  @keyframes markIn {
+    from { background-size: 0 42%; }
+    to { background-size: 100% 42%; }
+  }
+
+  .scroll-mark {
+    background-image: linear-gradient(transparent 58%, rgba(199, 154, 82, 0.22) 0);
+    background-repeat: no-repeat;
+    background-size: 100% 42%;
+  }
+
+  @media (max-width: 980px) {
+    .finding,
+    .tech-card {
+      grid-column: span 6;
+    }
+
+    .references,
+    .detail-grid,
+    .atmosphere-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .atmosphere-card {
+      grid-column: span 1;
+    }
+
+    .story-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .phone-stage {
+      position: relative;
+      top: auto;
+      min-height: auto;
+      padding-bottom: 18px;
+    }
+
+    .story-step {
+      min-height: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      min-height: 88svh;
+      background-position: 58% center;
+    }
+
+    .hero-inner {
+      width: min(100% - 28px, 1160px);
+      padding-bottom: 42px;
+    }
+
+    .section {
+      padding: 62px 0;
+    }
+
+    .finding,
+    .tech-card {
+      grid-column: 1 / -1;
+    }
+
+    .references,
+    .detail-grid,
+    .atmosphere-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .atmosphere-card {
+      grid-column: 1 / -1;
+    }
+
+    .phone {
+      width: min(100%, 360px);
+    }
+
+    .phone-screen {
+      height: 650px;
+    }
+
+    .roadmap-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 1ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="cursor-glow" aria-hidden="true"></div>
+<div class="page">
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <p class="eyebrow">前 端 审 美 提 升 方 案</p>
+      <h1>把“定向解密”做成一段会呼吸的毕业路线</h1>
+      <p class="hero-desc">我读了当前文件夹、现有蓝绿松石美化稿和你的审美笔记。这个版本保留现有主色和流程，不急着推翻，而是把“入楼、答题、收集回声、终章、兑奖”串成更有仪式感的滚动体验。</p>
+      <div class="hero-meta" aria-label="方案关键词">
+        <span>滚动驱动</span>
+        <span>磨砂与噪点质感</span>
+        <span>微动效反馈</span>
+        <span>手机端优先</span>
+        <span>不改后端逻辑</span>
+      </div>
+      <p class="scroll-cue">向下看完整构想，右侧手机会跟随方案变化</p>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="页面目录">
+    <div class="toc-inner">
+      <a href="#read">读到什么</a>
+      <a href="#notes">笔记可用点</a>
+      <a href="#references">参考提炼</a>
+      <a href="#proposal">升级方案</a>
+      <a href="#details">落地细节</a>
+      <a href="#roadmap">实施节奏</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="section compact" id="read">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">项 目 现 状</p>
+          <h2>当前版本已经有“蓝绿松石”的骨架，下一步该补的是体验密度。</h2>
+          <p>文件夹里真正运行的是 `static/` 前端，视觉目标稿是 `设计稿参考_蓝绿松石.html`。它已经把主线、旁枝、回声纸团、终章简谱、抽奖、赛博礼物和后台核销都覆盖了。</p>
+        </div>
+        <div class="grid">
+          <article class="panel finding reveal">
+            <span class="signal">优势</span>
+            <b>流程完整，色彩方向稳定</b>
+            <p>松石青 + 暖铜的主次关系已经成立，正式页面也保留了原有接口和游戏进度逻辑。现在适合做“审美加法”，不适合大拆大改。</p>
+          </article>
+          <article class="panel finding reveal">
+            <span class="signal">缺口</span>
+            <b>第一屏还像入口表单</b>
+            <p>首页和登录页信息清楚，但进入活动的仪式感偏弱。可以把“理科五号楼”“毕业回声”“解谜路线”提前变成第一视觉信号。</p>
+          </article>
+          <article class="panel finding reveal">
+            <span class="signal">机会</span>
+            <b>动效已有基础，可继续串联</b>
+            <p>纸团、浓雾、烟花已经是好种子。下一步把它们从单点彩蛋变成跨页面的连续语言：入场有雾，答题有推进，回声有收藏，终章有释放。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="notes">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">从 笔 记 到 本 项 目</p>
+          <h2>你的审美笔记里，最适合落地的是这四类。</h2>
+          <p>我没有选择“为了酷而酷”的 3D/WebGL。这个项目是现场活动网页，加载稳定和手机手感比炫技更重要，所以优先用原生 CSS、少量 JS 和现有图片资产完成质感升级。</p>
+        </div>
+        <div class="grid">
+          <article class="panel tech-card reveal">
+            <div class="mini-motion"><div class="orb-line"><i></i></div></div>
+            <b>滚动驱动的体验</b>
+            <p>把页面切换感变成“沿楼推进”：章节进入时题卡淡入、进度条增长、手机示意同步切屏。</p>
+          </article>
+          <article class="panel tech-card reveal">
+            <div class="mini-motion"><div class="texture-demo"></div></div>
+            <b>质感与层次</b>
+            <p>保留清爽底色，但加入纸纹噪点、磨砂导航、多层阴影和极轻内发光，避免白卡太平。</p>
+          </article>
+          <article class="panel tech-card reveal">
+            <div class="mini-motion"><button class="pulse-button">按下反馈</button></div>
+            <b>动效设计</b>
+            <p>按钮、纸条、票根和弹窗统一使用 200-400ms 的利落缓动；奖励场景才放大动效。</p>
+          </article>
+          <article class="panel tech-card reveal">
+            <div class="mini-motion"><input class="focus-demo" placeholder="聚焦试试" /></div>
+            <b>容易被忽略的细节</b>
+            <p>输入框 focus、链接下划线、selection 高亮、错误状态、滚动条和加载骨架都能提高“完成度”。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="references">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">参 考 提 炼</p>
+          <h2>不是照抄风格，而是借它们的“气质方法”。</h2>
+          <p>结合你笔记里的收藏和检索方向，我把参考拆成四个可转译的设计原则。</p>
+        </div>
+        <div class="references">
+          <article class="panel reference reveal">
+            <b>UniPat AI</b>
+            <p>适合借“清晰使命句 + 大留白 + 克制科技感”。可用于首页标题，让项目看起来更有正式感。</p>
+            <small><a href="https://unipat.ai/" target="_blank" rel="noreferrer">unipat.ai</a></small>
+          </article>
+          <article class="panel reference reveal">
+            <b>Margins</b>
+            <p>适合借“移动设备框 + 温柔叙事 + 场景化插画/生活感”。本项目可以转成手机框里的楼内旅程。</p>
+            <small><a href="https://margins.app/" target="_blank" rel="noreferrer">margins.app</a></small>
+          </article>
+          <article class="panel reference reveal">
+            <b>Land-book / Awwwards</b>
+            <p>两者都把 animation、parallax、storytelling、mobile app 等作为可筛选风格方向；这正好对应你的笔记。</p>
+            <small><a href="https://land-book.com/" target="_blank" rel="noreferrer">land-book.com</a> · <a href="https://www.awwwards.com/websites/scrolling/" target="_blank" rel="noreferrer">awwwards scrolling</a></small>
+          </article>
+          <article class="panel reference reveal">
+            <b>Apple 产品页</b>
+            <p>适合借“滚动中逐层揭示信息”的节奏，但不照搬重资源视频。这里用 CSS/JS 做轻量版。</p>
+            <small><a href="https://www.apple.com/iphone/" target="_blank" rel="noreferrer">apple.com/iphone</a></small>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="proposal">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">方 案 示 意</p>
+          <h2>建议方向：楼内路线感 + 纸质收藏感 + 奖励释放感。</h2>
+          <p>左侧是改造建议，右侧手机是对应效果示意。滚动到不同段落时，手机画面会自动切换。</p>
+        </div>
+
+        <div class="story-layout">
+          <div class="story-copy">
+            <section class="story-step reveal" data-scene="scene-entry">
+              <div class="step-copy">
+                <span class="step-no">01 入楼</span>
+                <h3><span class="scroll-mark">首页/登录页改成“进入理五”的第一幕。</span></h3>
+                <p>把现在的项目列表和登录表单前移成更有画面感的入口：真实楼内照片铺底，标题直接给出“社系毕业晚会解密”，学号输入仍保留，但从普通表单变成“领取路线”的动作。</p>
+                <ul class="step-list">
+                  <li>首页不再像管理后台列表，而像活动入口。</li>
+                  <li>登录表单使用磨砂层承载，减少纯白卡片的工具感。</li>
+                  <li>保留测试入口，但视觉上降级，避免抢主行动线。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="story-step reveal" data-scene="scene-question">
+              <div class="step-copy">
+                <span class="step-no">02 答题</span>
+                <h3><span class="scroll-mark">主线页做成“路线推进”，而不是题卡堆叠。</span></h3>
+                <p>现有进度卡很好，可以强化为 sticky 小仪表盘；题卡进入视口时轻微上浮，图片有 lazy-load 模糊过渡，提交按钮有明确按压反馈，答错时救援提示像“地图注释”展开。</p>
+                <ul class="step-list">
+                  <li>题卡保留 8px 左右克制圆角，层次靠阴影和边线，不靠大圆角。</li>
+                  <li>主线题面继续用衬线，旁枝题面用无衬线，信息层级更清楚。</li>
+                  <li>冷却状态用固定数字宽度，避免倒计时造成按钮抖动。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="story-step reveal" data-scene="scene-echo">
+              <div class="step-copy">
+                <span class="step-no">03 回声</span>
+                <h3><span class="scroll-mark">把“回声”做成真正的收藏物。</span></h3>
+                <p>当前纸团展开已经是亮点。下一版可以让每次答对后的回声纸条都保留统一纹理、印章、折痕和收入动画；百宝箱里再用小印章做索引，让玩家感觉自己真的在收集一组毕业纸条。</p>
+                <ul class="step-list">
+                  <li>回声出现时用纸团展开，收入时压缩到百宝箱按钮位置。</li>
+                  <li>百宝箱展开时做高度过渡，并给新收入项一帧暖铜闪光。</li>
+                  <li>印章字、题号、地点形成稳定视觉锚点。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="story-step reveal" data-scene="scene-final">
+              <div class="step-copy">
+                <span class="step-no">04 终章</span>
+                <h3><span class="scroll-mark">终章不只是答题，而是“把前面全部回声合唱”。</span></h3>
+                <p>终章页可以更像一张深色节目单：顶部深松石幕布，下面是简谱目录和歌词线索。简谱缩略图进入时错峰淡入，点击大图继续保留已有翻页能力。</p>
+                <ul class="step-list">
+                  <li>把六个加重字做成一条可视化“回声路径”。</li>
+                  <li>简谱区从普通折叠变成乐谱册目录。</li>
+                  <li>终章按钮用暖铜，但只在最终提交使用，焦点更珍贵。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="story-step reveal" data-scene="scene-reward">
+              <div class="step-copy">
+                <span class="step-no">05 奖励</span>
+                <h3><span class="scroll-mark">兑奖页承担情绪释放，烟花和票根可以更有“落幕”感。</span></h3>
+                <p>抽奖、兑奖码、赛博礼物是整个流程最适合放大动效的地方。建议保持烟花，但把粒子范围控制在奖励卡附近，票根做轻微入场和撕孔边缘，让最终凭证更像可纪念物。</p>
+                <ul class="step-list">
+                  <li>抽奖转盘动效结束后再出现结果，避免信息太快跳出。</li>
+                  <li>票根码使用等宽字体和暖铜边，方便现场核销。</li>
+                  <li>赛博礼物弹窗出现、收下、离开三个状态完整串起。</li>
+                </ul>
+              </div>
+            </section>
+          </div>
+
+          <aside class="phone-stage" aria-label="手机端效果示意">
+            <div class="phone">
+              <div class="phone-screen" id="phoneScreen">
+                <section class="screen-scene scene-hero is-on" data-scene-id="scene-entry">
+                  <div class="mini-top">
+                    <div class="mini-brand">社系毕业歌会解密</div>
+                    <span class="mini-dot"></span>
+                  </div>
+                  <div class="mini-body">
+                    <div class="entry-copy">
+                      <p>理 科 五 号 楼</p>
+                      <h4>沿着楼的线索<br />收集毕业回声</h4>
+                      <span>学号与手机号开启这一程，进度会自动保存。</span>
+                      <button class="mini-btn" type="button">领取路线</button>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="screen-scene scene-question" data-scene-id="scene-question">
+                  <div class="mini-top">
+                    <div class="mini-brand">沿着楼的线索前进</div>
+                    <span class="mini-dot"></span>
+                  </div>
+                  <div class="mini-body">
+                    <div class="progress-mini">
+                      <strong>当前进度</strong>
+                      <div class="progress-line"><i></i></div>
+                      <small>主线 2/6 · 旁枝 0/3</small>
+                    </div>
+                    <article class="question-mini">
+                      <header><h4>A2 · 一层走廊</h4><span class="badge">主线</span></header>
+                      <div class="qcopy">
+                        <p>先从飞舟老师信箱里借一个门牌号。找到那扇门后，请读出它属于第几个巡查点。</p>
+                        <figure class="shot"><img src="static/assets/a2-zhou-feizhou-mailbox.jpg" alt="周飞舟老师信箱照片" /></figure>
+                        <div class="answer-row">
+                          <input class="mini-input" placeholder="1 位数字" />
+                          <button class="mini-btn" type="button">提交</button>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="screen-scene scene-echo" data-scene-id="scene-echo">
+                  <div class="echo-stage">
+                    <article class="paper">
+                      <h4>收 到 一 条 回 声</h4>
+                      <div class="seal">社</div>
+                      <p>初入燕园，你在千万声音中认出反复写下的 <strong>社</strong> 字。它像一枚小小印章，盖在一切的开始。</p>
+                      <button class="mini-btn" type="button" id="replayPaper">重播纸条</button>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="screen-scene scene-final" data-scene-id="scene-final">
+                  <div class="mini-top">
+                    <div class="mini-brand">终章 · 行行重行行</div>
+                    <span class="mini-dot"></span>
+                  </div>
+                  <div class="mini-body">
+                    <div class="final-band">
+                      <h4>一路的念念不忘<br />终会得到回响</h4>
+                    </div>
+                    <div class="score-preview">
+                      <div class="score-grid">
+                        <img src="static/assets/shexi-score-page-1.png" alt="简谱第 1 页" />
+                        <img src="static/assets/shexi-score-page-2.png" alt="简谱第 2 页" />
+                        <img src="static/assets/shexi-score-page-3.png" alt="简谱第 3 页" />
+                      </div>
+                      <div class="lyric-path">
+                        <small>六枚回声印章</small>
+                        <div class="chip-row">
+                          <span class="chip">社</span>
+                          <span class="chip">右</span>
+                          <span class="chip">行</span>
+                          <span class="chip">二</span>
+                          <span class="chip">三</span>
+                          <span class="chip">一</span>
+                        </div>
+                      </div>
+                      <button class="mini-btn" type="button">提交终章答案</button>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="screen-scene scene-reward" data-scene-id="scene-reward">
+                  <div class="reward-stage">
+                    <span class="spark" style="--x:-84px;--y:48px;--delay:0ms"></span>
+                    <span class="spark" style="--x:72px;--y:36px;--delay:80ms"></span>
+                    <span class="spark" style="--x:-24px;--y:96px;--delay:160ms"></span>
+                    <span class="spark" style="--x:104px;--y:110px;--delay:220ms"></span>
+                    <span class="spark" style="--x:-118px;--y:120px;--delay:300ms"></span>
+                    <span class="spark" style="--x:36px;--y:142px;--delay:380ms"></span>
+                    <div class="ticket">
+                      <small>完 成 凭 证</small>
+                      <strong>SX-7Q3M-A1K9</strong>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="details">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">落 地 细 节</p>
+          <h2>真正让页面显贵的，不是“大改”，而是这些小地方统一。</h2>
+          <p>补充你的新灵感后，我建议把“阶段氛围”做成一套轻量主题系统：不改变流程，只在不同任务阶段调整背景、字体颜色和主色权重，让玩家感觉自己正在从入楼、解密、收藏走向终章。</p>
+        </div>
+        <div class="atmosphere-grid">
+          <article class="atmosphere-card tone-entry reveal">
+            <span>入场 / 登录</span>
+            <b>松石雾白 + 暖光</b>
+            <p>真实楼内照片或浅雾背景，文字偏深墨青，营造“领取路线”的安静开场。</p>
+          </article>
+          <article class="atmosphere-card tone-main reveal">
+            <span>主线解密</span>
+            <b>高可读浅底</b>
+            <p>保持白卡和松石线索色，题面阅读优先，动效只做轻微推进。</p>
+          </article>
+          <article class="atmosphere-card tone-error reveal">
+            <span>答错 / 冷却</span>
+            <b>暖陶红低饱和</b>
+            <p>不是刺眼报警，而是让页面短暂变“紧”，提示、输入框和按钮状态统一收敛。</p>
+          </article>
+          <article class="atmosphere-card tone-echo reveal">
+            <span>回声收藏</span>
+            <b>深松石舞台</b>
+            <p>背景压暗，纸条和印章成为主角，让每次答对都像收到一件收藏物。</p>
+          </article>
+          <article class="atmosphere-card tone-final reveal">
+            <span>终章 / 结算</span>
+            <b>深幕布 + 暖铜</b>
+            <p>终章、抽奖、票根可以显著转深，暖铜只给最终行动和奖励时刻。</p>
+          </article>
+          <article class="atmosphere-card tone-admin reveal">
+            <span>后台核销</span>
+            <b>青灰工作台</b>
+            <p>工作人员界面保持冷静、密度高、少装饰，和前台叙事场景区分开。</p>
+          </article>
+        </div>
+        <div class="detail-grid">
+          <article class="panel detail-card reveal">
+            <b>配色</b>
+            <p>保留松石青为主，暖铜只给“终章提交、奖项、票根、关键提示”。每个阶段只调整底色和文字层级，避免变成多套割裂皮肤。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>字体</b>
+            <p>标题、章节名、回声纸条标题使用有衬线字体；正文、说明、按钮、输入框和后台表格统一使用无衬线字体，氛围和可读性分工明确。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>动效</b>
+            <p>普通控件 160-240ms，页面/纸条 600-900ms，烟花 1100-1400ms。缓动统一用 cubic-bezier，不再随手 `ease`。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>图像</b>
+            <p>真实照片只在关键节点出现：入口、题图、简谱。避免每张卡都铺图，保留信息阅读效率。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>移动端</b>
+            <p>输入、按钮、题卡宽度固定节奏；倒计时、兑奖码使用等宽数字；长标题允许换行但不压缩字号。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>无障碍</b>
+            <p>所有动效支持 `prefers-reduced-motion`；表单 focus 和错误提示可见；图片保留 alt，按钮文案明确。</p>
+          </article>
+          <article class="panel detail-card reveal">
+            <b>性能</b>
+            <p>先用 CSS 和少量原生 JS，不上重型库。若以后要做更强滚动叙事，再考虑 GSAP ScrollTrigger。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">实 施 节 奏</p>
+          <h2>建议分三步落到正式 `static/` 前端。</h2>
+        </div>
+        <div class="roadmap">
+          <div class="roadmap-row reveal">
+            <time>第一步</time>
+            <p>先改首页/登录/主线题卡：建立入口氛围、磨砂顶栏、题卡进入动画、输入与按钮微交互。风险最低，收益最大。</p>
+          </div>
+          <div class="roadmap-row reveal">
+            <time>第二步</time>
+            <p>升级回声与百宝箱：把已有纸团动效抽成统一视觉语言，让每条回声都拥有印章、纸纹和收藏动线。</p>
+          </div>
+          <div class="roadmap-row reveal">
+            <time>第三步</time>
+            <p>处理终章与兑奖：乐谱册目录、歌词路径、转盘结束节奏、票根入场和赛博礼物烟花，形成完整落幕。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    独立方案页，不改动正式前端。可以用它作为下一轮落地 `static/styles.css` 与 `static/app.js` 的视觉说明。
+  </footer>
+</div>
+
+<script>
+  const glow = document.querySelector(".cursor-glow");
+  const phoneScreen = document.querySelector("#phoneScreen");
+  const scenes = [...document.querySelectorAll(".screen-scene")];
+  const storySteps = [...document.querySelectorAll(".story-step")];
+  const navLinks = [...document.querySelectorAll(".toc a")];
+
+  window.addEventListener("pointermove", (event) => {
+    if (!glow) return;
+    glow.style.left = event.clientX + "px";
+    glow.style.top = event.clientY + "px";
+    glow.style.opacity = "1";
+    if (phoneScreen) {
+      const rect = phoneScreen.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      phoneScreen.style.setProperty("--mx", Math.max(0, Math.min(100, x)) + "%");
+      phoneScreen.style.setProperty("--my", Math.max(0, Math.min(100, y)) + "%");
+    }
+  }, { passive: true });
+
+  window.addEventListener("pointerleave", () => {
+    if (glow) glow.style.opacity = "0";
+  });
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) entry.target.classList.add("is-visible");
+    }
+  }, { threshold: 0.16 });
+
+  document.querySelectorAll(".reveal").forEach((node) => revealObserver.observe(node));
+
+  function showScene(id) {
+    scenes.forEach((scene) => {
+      scene.classList.toggle("is-on", scene.dataset.sceneId === id);
+    });
+  }
+
+  const sceneObserver = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible) showScene(visible.target.dataset.scene);
+  }, {
+    rootMargin: "-24% 0px -34% 0px",
+    threshold: [0.18, 0.35, 0.6],
+  });
+
+  storySteps.forEach((step) => sceneObserver.observe(step));
+
+  const sectionObserver = new IntersectionObserver((entries) => {
+    const active = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!active) return;
+    const id = "#" + active.target.id;
+  navLinks.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === id));
+  }, {
+    rootMargin: "-16% 0px -72% 0px",
+    threshold: [0.08, 0.16, 0.3],
+  });
+
+  document.querySelectorAll("main > section[id]").forEach((section) => sectionObserver.observe(section));
+
+  navLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const target = document.querySelector(link.getAttribute("href"));
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      history.replaceState(null, "", link.getAttribute("href"));
+    });
+  });
+
+  const replayPaper = document.querySelector("#replayPaper");
+  replayPaper?.addEventListener("click", () => {
+    const paper = document.querySelector(".scene-echo .paper");
+    if (!paper) return;
+    paper.style.animation = "none";
+    paper.offsetHeight;
+    paper.style.animation = "";
+  });
+</script>
+</body>
+</html>
