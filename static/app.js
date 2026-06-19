@@ -32,6 +32,11 @@ let imageMouseStage = null;
 let confirmModal = null;
 let cyberGiftModal = null;
 let eventTimer = null;
+let animateReveals = false;
+let lastRevealKey = null;
+let revealObserver = null;
+let ticketShown = false;
+let ticketBurstPending = false;
 const echoArchiveOpen = { main: false, bonus: false, score: false };
 const messages = new Map();
 const draftAnswers = new Map();
@@ -106,6 +111,28 @@ function setScreen(children) {
   app.replaceChildren(...nodes);
   const heading = app.querySelector(".section-head h1") || app.querySelector("h1");
   transitionTo(heading ? heading.textContent : "");
+  observeReveals();
+}
+
+function observeReveals() {
+  const nodes = document.querySelectorAll("#app .reveal:not(.is-visible)");
+  if (!nodes.length) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !("IntersectionObserver" in window)) {
+    nodes.forEach((node) => node.classList.add("is-visible"));
+    return;
+  }
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      }
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+  }
+  nodes.forEach((node) => revealObserver.observe(node));
 }
 
 let lastPageKey = null;
@@ -147,6 +174,13 @@ function sectionHead(eyebrow, title, lede) {
     el("p", { class: "eyebrow" }, eyebrow),
     el("h1", {}, title),
     lede ? el("p", { class: "lede" }, lede) : null,
+  ]);
+}
+
+function pageFooter() {
+  return el("footer", { class: "page-footer", "aria-hidden": "true" }, [
+    el("img", { src: "/static/assets/mascot-qunyang.webp", alt: "" }),
+    el("span", {}, "社会学系毕业晚会 · 群学"),
   ]);
 }
 
@@ -217,6 +251,7 @@ function renderHome() {
         ]),
       ]),
     ]),
+    pageFooter(),
   ]);
 }
 
@@ -286,12 +321,19 @@ async function renderProject(options = {}) {
   const progressPct = Math.round((collectedMain / state.main_ids.length) * 100);
   const activeQuestions = visibleActiveQuestions();
 
+  const revealKey = state.phase;
+  animateReveals = shouldReload && revealKey !== lastRevealKey;
+  lastRevealKey = revealKey;
+  if (state.phase !== "completed") ticketShown = false;
+  const appEl = $("#app");
+  if (appEl) {
+    appEl.dataset.stage = state.phase === "final" ? "final" : state.phase === "completed" ? "reward" : "";
+  }
+
   const page = [
-    sectionHead(
-      "社系毕业晚会解密",
-      phaseTitle(state.phase),
-      phaseLede(state.phase)
-    ),
+    state.phase === "final"
+      ? renderFinalBand()
+      : sectionHead("社系毕业晚会解密", phaseTitle(state.phase), phaseLede(state.phase)),
     renderProgressPanel(progressPct, collectedMain),
     ...renderPhaseBody(activeQuestions),
     renderEchoAnimation(),
@@ -309,6 +351,10 @@ async function renderProject(options = {}) {
   if (cyberGiftModal) {
     requestAnimationFrame(() => launchFireworks($(".cyber-gift-overlay .fw-layer")));
   }
+  if (ticketBurstPending) {
+    ticketBurstPending = false;
+    requestAnimationFrame(() => burstTicketSparks());
+  }
   startCooldownTimer();
   startEventPolling();
 }
@@ -316,13 +362,16 @@ async function renderProject(options = {}) {
 function renderParticipantLogin(errorMessage = "") {
   const notice = errorMessage || loginNotice || "";
   return [
-    sectionHead(
-      "社系毕业晚会解密",
-      "用学号和手机号开启这一程",
-      "26届毕业生可以获得礼物，但游戏对所有人开放。每个学号需绑定一个手机号；刷新或重新打开时会回到当前进度。"
-    ),
-    el("form", { class: "login-panel", onsubmit: onParticipantLogin }, [
-      el("h2", {}, "玩家入口"),
+    el("section", { class: "entry-hero" }, [
+      el("img", { class: "entry-wm", src: "/static/assets/mascot-qunyang.webp", alt: "", "aria-hidden": "true" }),
+      el("img", { class: "entry-greeter", src: "/static/assets/mascot-sheep.png", alt: "社会学系吉祥物·群羊" }),
+      el("div", { class: "entry-copy" }, [
+        el("p", { class: "eyebrow" }, "社系毕业晚会解密"),
+        el("h1", {}, ["理科五号楼里", el("br"), "六段毕业回声"]),
+      ]),
+    ]),
+    el("form", { class: "login-panel entry-frost", onsubmit: onParticipantLogin }, [
+      el("h2", {}, "用学号和手机号开启这一程"),
       el("div", { class: "admin-actions" }, [
         el("input", {
           class: "admin-input",
@@ -343,6 +392,7 @@ function renderParticipantLogin(errorMessage = "") {
         el("button", { class: "btn", type: "submit" }, "进入活动"),
       ]),
       el("p", { class: `message ${notice ? "error" : ""}`, id: "participantLoginMessage" }, notice),
+      el("p", { class: "entry-note" }, "26 届毕业生可获得礼物，游戏对所有人开放 · 每个学号绑定一个手机号，进度自动保存"),
       SHOW_TEST_ENTRY
         ? el("div", { class: "test-entry" }, [
             el("p", { class: "small" }, "测试阶段入口：不绑定学号，可无限次生成新进度。正式使用时删除这个入口。"),
@@ -350,6 +400,7 @@ function renderParticipantLogin(errorMessage = "") {
           ])
         : null,
     ]),
+    pageFooter(),
   ];
 }
 
@@ -477,13 +528,28 @@ function cooldownStatusText() {
     : policy;
 }
 
+function renderFinalBand() {
+  return el("section", { class: "final-band" }, [
+    el("p", { class: "final-band-eyebrow" }, "终 章 · 压 轴"),
+    el("h1", {}, "行行重行行"),
+    el("p", { class: "final-band-by" }, "一路收集的六段回声，在此汇成终章。"),
+  ]);
+}
+
 function renderPhaseBody(activeQuestions) {
   const blocks = [];
-  blocks.push(...renderEchoGroups());
+  // 终章＝节目单：题面 → 六段回声（主线百宝箱·可折叠）→ 简谱曲目条
   if (state.phase === "final") {
-    blocks.push(renderScorePanel());
+    if (activeQuestions.length) {
+      blocks.push(renderQuestionSection("终章题", "终章已开启，未完成的旁枝题已经关闭。", activeQuestions));
+    }
+    blocks.push(...renderEchoGroups());
+    const score = renderScorePanel();
+    if (score) blocks.push(score);
+    return blocks;
   }
 
+  blocks.push(...renderEchoGroups());
   if (state.phase === "post_main_choice") {
     blocks.push(renderChoicePanel());
   } else if (state.phase === "completed") {
@@ -493,12 +559,10 @@ function renderPhaseBody(activeQuestions) {
       blocks.push(renderAllBonusCompletePanel());
     }
     if (activeQuestions.length) {
-      const title = state.phase === "bonus" ? "旁枝路线" : state.phase === "final" ? "终章题" : "当前开放题";
-  const description = state.phase === "final"
-    ? "终章已开启，未完成的旁枝题已经关闭。"
-        : state.phase === "bonus"
-          ? "旁枝题一次开放，可任选完成。"
-          : "完成当前两题后，下一组线索会自动出现。";
+      const title = state.phase === "bonus" ? "旁枝路线" : "当前开放题";
+      const description = state.phase === "bonus"
+        ? "旁枝题一次开放，可任选完成。"
+        : "完成当前两题后，下一组线索会自动出现。";
       blocks.push(renderQuestionSection(title, description, activeQuestions));
     }
   }
@@ -525,20 +589,13 @@ function orderedMainEchoQuestions() {
 function renderScorePanel() {
   const images = state.score_images || [];
   if (!images.length) return null;
-  const open = echoArchiveOpen.score;
-  return el("details", {
-    class: "score-directory",
-    open,
-    ontoggle: (event) => {
-      echoArchiveOpen.score = event.currentTarget.open;
-    },
-  }, [
-    el("summary", {}, `《行行重行行》简谱（${images.length} 页）`),
-    el("div", { class: "score-grid" }, images.map((image, index) => el("figure", { class: "score-page" }, [
+  return el("section", { class: "score-panel" }, [
+    el("p", { class: "score-panel-label" }, `《行行重行行》简谱 · ${images.length} 页（左右滑动，点开可翻页）`),
+    el("div", { class: "score-strip" }, images.map((image, index) => el("figure", { class: "score-page" }, [
       el("button", { class: "question-image-button score-image-button", type: "button", onclick: () => openImageModal(image, images, index) }, [
         el("img", { src: image.src, alt: image.alt || "简谱图片" }),
       ]),
-      image.caption ? el("figcaption", {}, image.caption) : null,
+      el("figcaption", {}, image.caption || `${index + 1} / ${images.length}`),
     ]))),
   ]);
 }
@@ -591,12 +648,26 @@ function renderCompletedPanel() {
     el("h2", {}, "且行且歌共少年"),
     el("p", { class: "prompt" }, endingText),
     renderLotteryPanel(state.lottery),
-    waitingForDraw ? null : renderRedeem(state.redeem_code),
+    waitingForDraw ? null : renderFinalTicket(state.redeem_code),
     el("div", { class: "cta-row" }, [
       isTester
         ? el("button", { class: "btn secondary", type: "button", onclick: restartAsNewParticipant }, "测试人员重新开始一次")
         : el("button", { class: "btn secondary", type: "button", onclick: logoutParticipant }, "退出登录"),
     ]),
+  ]);
+}
+
+function renderFinalTicket(redeem) {
+  if (!redeem) return null;
+  const firstReveal = !ticketShown;
+  if (firstReveal) {
+    ticketShown = true;
+    ticketBurstPending = true;
+  }
+  return el("div", { class: `ticket-peek-wrap${firstReveal ? " enter" : ""}` }, [
+    el("div", { class: "fw-layer", "aria-hidden": "true" }),
+    el("img", { class: "ticket-peek-sheep", src: "/static/assets/mascot-sheep.png", alt: "", "aria-hidden": "true" }),
+    renderRedeem(redeem),
   ]);
 }
 
@@ -797,6 +868,18 @@ function fireworkBurst(layer, cx, cy, color) {
     layer.appendChild(dot);
     setTimeout(() => dot.remove(), 1400);
   }
+}
+
+function burstTicketSparks() {
+  const layer = $(".ticket-peek-wrap .fw-layer");
+  if (!layer) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) return;
+  const w = layer.clientWidth || 280;
+  const h = layer.clientHeight || 160;
+  fireworkBurst(layer, w * 0.5, h * 0.4, "#c79a52");
+  setTimeout(() => fireworkBurst(layer, w * 0.3, h * 0.52, "#37cdbb"), 200);
+  setTimeout(() => fireworkBurst(layer, w * 0.72, h * 0.52, "#ecd9ad"), 360);
 }
 
 async function makeDecision(action) {
@@ -1070,9 +1153,11 @@ function renderQuestionCard(q) {
   const cardClass = [
     "question-card",
     q.kind === "bonus" ? "branch-card" : "",
+    q.kind === "final" ? "final-card" : "",
     q.completed ? "complete" : "",
     q.locked ? "locked" : "",
     hasError ? "err" : "",
+    animateReveals ? "reveal" : "",
   ].filter(Boolean).join(" ");
   const badgeClass = q.completed ? "badge done" : q.kind === "bonus" ? "badge bonus" : "badge main";
   const body = [
@@ -1137,7 +1222,13 @@ function renderRescueHints(hints) {
 function renderQuestionImage(image) {
   return el("figure", { class: "question-image" }, [
     el("button", { class: "question-image-button", type: "button", onclick: () => openImageModal(image) }, [
-      el("img", { src: image.src, alt: image.alt || "题目附图" }),
+      el("img", {
+        class: "blurup",
+        loading: "lazy",
+        alt: image.alt || "题目附图",
+        onload: (event) => event.currentTarget.classList.add("loaded"),
+        src: image.src,
+      }),
     ]),
     image.caption ? el("figcaption", {}, image.caption) : null,
   ]);
@@ -1866,6 +1957,8 @@ function renderError(message) {
 }
 
 function route() {
+  const appEl = $("#app");
+  if (appEl) appEl.dataset.stage = "";
   if (location.pathname === "/admin/submissions") return renderAdminSubmissions();
   if (location.pathname === "/admin") return renderAdmin();
   if (location.pathname === "/project/shexi-graduation") return renderProject();
