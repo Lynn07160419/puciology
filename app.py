@@ -28,7 +28,7 @@ PHASE_FINAL = "final"
 PHASE_COMPLETED = "completed"
 VALID_PHASES = {PHASE_MAIN, PHASE_POST_MAIN_CHOICE, PHASE_BONUS, PHASE_FINAL, PHASE_COMPLETED}
 MAIN_WAVES = [["A1", "A2"], ["A3", "A6"], ["A4", "A5"]]
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
 ADMIN_SESSION_TTL_SECONDS = int(os.environ.get("ADMIN_SESSION_TTL_SECONDS", str(12 * 60 * 60)))
 ADMIN_LOGIN_WINDOW_SECONDS = int(os.environ.get("ADMIN_LOGIN_WINDOW_SECONDS", "60"))
 ADMIN_LOGIN_MAX_FAILURES = int(os.environ.get("ADMIN_LOGIN_MAX_FAILURES", "5"))
@@ -1394,6 +1394,8 @@ def admin_login(nickname, password, db_path=DB_PATH):
     if len(failures) >= ADMIN_LOGIN_MAX_FAILURES:
         ADMIN_LOGIN_FAILURES[failure_key] = failures
         raise ValueError("后台密码错误次数较多，请稍后再试。")
+    if not ADMIN_PASSWORD:
+        raise ValueError("后台密码未配置，请用环境变量 ADMIN_PASSWORD 启动服务后再登录。")
     if password != ADMIN_PASSWORD:
         failures.append(current_time)
         ADMIN_LOGIN_FAILURES[failure_key] = failures
