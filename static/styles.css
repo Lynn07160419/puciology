@@ -86,9 +86,7 @@ input {
 }
 
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 8;
+  position: static;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -96,7 +94,6 @@ input {
   padding: 15px max(20px, env(safe-area-inset-left)) 12px;
   border-bottom: 1px solid var(--line);
   background: rgba(238, 244, 241, 0.92);
-  backdrop-filter: blur(8px);
 }
 
 .brand {
@@ -1584,16 +1581,18 @@ h3 {
 /* ---------- 图片大图查看 ---------- */
 .image-modal-panel {
   position: relative;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   width: min(760px, calc(100vw - 24px));
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
   padding: 14px;
+  overflow: hidden;
 }
 
 .image-modal-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -1607,8 +1606,9 @@ h3 {
 }
 
 .image-zoom-stage {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
-  min-height: 220px;
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
@@ -1626,7 +1626,7 @@ h3 {
 .image-modal-panel img,
 .zoomable-image {
   width: 100%;
-  max-height: calc(100vh - 136px);
+  max-height: 100%;
   object-fit: contain;
   transform-origin: center center;
   transform: translate(var(--image-x, 0px), var(--image-y, 0px)) scale(var(--image-scale, 1));
@@ -1656,6 +1656,7 @@ h3 {
 }
 
 .image-gallery-bar {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2108,11 +2109,21 @@ html {
   transform: none;
 }
 
-/* 进度卡吸顶（topbar 约 46px 高） */
+/* 进度卡：桌面端吸顶（顶栏已不再吸顶，故 top:0）；手机端与通关页不固定 */
 .summary-panel {
   position: sticky;
-  top: 46px;
+  top: 0;
   z-index: 5;
+}
+/* #4 通关页（解出「且行且歌共少年」之后）无需固定 */
+#app[data-stage="reward"] .summary-panel {
+  position: static;
+}
+/* #1 手机屏短，答题进度卡取消固定，避免遮挡下方题目 */
+@media (max-width: 620px) {
+  .summary-panel {
+    position: static;
+  }
 }
 
 /* 题图模糊→清晰 */
