@@ -23,6 +23,8 @@ let lotteryNotice = null;
 let pendingLotteryResult = null;
 let loginNotice = null;
 let imageModal = null;
+let imageGallery = null;
+let imageGalleryIndex = 0;
 let imageZoom = { scale: 1, x: 0, y: 0 };
 let imagePointers = new Map();
 let imageGesture = null;
@@ -45,9 +47,9 @@ const LOTTERY_BASE_SEGMENTS = [
   "三等奖", "三等奖", "二等奖",
 ];
 const LOTTERY_SEGMENT_COLORS = {
-  一等奖: "var(--red)",
-  二等奖: "var(--gold)",
-  三等奖: "var(--green)",
+  一等奖: "var(--brass)",
+  二等奖: "var(--teal)",
+  三等奖: "var(--mute)",
   额外奖候补: "#7d8290",
 };
 const SVG_TAGS = new Set(["svg", "path", "circle"]);
@@ -102,6 +104,42 @@ function setScreen(children) {
   const app = $("#app");
   const nodes = (Array.isArray(children) ? children : [children]).filter((child) => child !== null && child !== undefined);
   app.replaceChildren(...nodes);
+  const heading = app.querySelector(".section-head h1") || app.querySelector("h1");
+  transitionTo(heading ? heading.textContent : "");
+}
+
+let lastPageKey = null;
+
+// 仅在「页面大标题」改变时播放浓雾聚散过渡；同一页面内的局部刷新不触发。
+function transitionTo(key) {
+  const isFirst = lastPageKey === null;
+  const changed = !isFirst && lastPageKey !== key;
+  lastPageKey = key;
+  if (changed) {
+    playPageTransition(true);
+  } else if (isFirst) {
+    playPageTransition(false);
+  }
+}
+
+function playPageTransition(withFog) {
+  const app = $("#app");
+  if (app) {
+    app.classList.remove("page-enter");
+    void app.offsetWidth;
+    app.classList.add("page-enter");
+  }
+  if (!withFog) return;
+  let fog = document.querySelector(".page-fog");
+  if (!fog) {
+    fog = document.createElement("div");
+    fog.className = "page-fog";
+    fog.setAttribute("aria-hidden", "true");
+    document.body.appendChild(fog);
+  }
+  fog.classList.remove("run");
+  void fog.offsetWidth;
+  fog.classList.add("run");
 }
 
 function sectionHead(eyebrow, title, lede) {
@@ -268,6 +306,9 @@ async function renderProject(options = {}) {
   } else if (restoreScrollY !== null) {
     requestAnimationFrame(() => window.scrollTo(0, restoreScrollY));
   }
+  if (cyberGiftModal) {
+    requestAnimationFrame(() => launchFireworks($(".cyber-gift-overlay .fw-layer")));
+  }
   startCooldownTimer();
   startEventPolling();
 }
@@ -423,7 +464,7 @@ function renderProgressPanel(progressPct, collectedMain) {
     messages.get("phase") ? el("p", { class: `message ${messages.get("phase").type}` }, messages.get("phase").text) : null,
     state.phase === "completed"
       ? null
-      : el("p", { class: "small cooldown-policy", id: "cooldownStatus" }, cooldownStatusText()),
+      : el("p", { class: `small cooldown-policy${cooldownRemaining > 0 ? " active" : ""}`, id: "cooldownStatus" }, cooldownStatusText()),
     state.phase === "completed" ? null : renderRedeem(state.redeem_code),
     state.phase === "bonus" ? renderBonusFinalNotice() : null,
   ]);
@@ -493,8 +534,8 @@ function renderScorePanel() {
     },
   }, [
     el("summary", {}, `《行行重行行》简谱（${images.length} 页）`),
-    el("div", { class: "score-grid" }, images.map((image) => el("figure", { class: "score-page" }, [
-      el("button", { class: "question-image-button score-image-button", type: "button", onclick: () => openImageModal(image) }, [
+    el("div", { class: "score-grid" }, images.map((image, index) => el("figure", { class: "score-page" }, [
+      el("button", { class: "question-image-button score-image-button", type: "button", onclick: () => openImageModal(image, images, index) }, [
         el("img", { src: image.src, alt: image.alt || "简谱图片" }),
       ]),
       image.caption ? el("figcaption", {}, image.caption) : null,
@@ -504,6 +545,7 @@ function renderScorePanel() {
 
 function renderChoicePanel() {
   return el("section", { class: "choice-panel" }, [
+    el("span", { class: "seal seal-lg" }, "毕"),
     el("p", { class: "badge done" }, "主线完成"),
     el("h2", {}, "恭喜你集齐六段毕业回声"),
     el("div", { class: "cta-row" }, [
@@ -607,19 +649,28 @@ function renderLotteryLegend(targetPrize) {
 
 function renderEchoArchive(key, title, questions, defaultOpen = false) {
   const open = echoArchiveOpen[key] ?? defaultOpen;
+  const directoryClass = key === "bonus" ? "echo-directory bonus-directory" : "echo-directory";
   return el("details", {
-    class: "echo-directory",
+    class: directoryClass,
     open,
     ontoggle: (event) => {
       echoArchiveOpen[key] = event.currentTarget.open;
     },
   }, [
     el("summary", {}, `${title}（${questions.length}）`),
-    el("div", { class: "echo-grid" }, questions.map((q, index) => el("article", { class: "echo-tile" }, [
-      el("p", { class: "small" }, `${index + 1}. ${displayQuestionId(q.id)} · ${q.title}`),
-      q.echo ? renderEcho(q.echo) : el("p", { class: "message" }, "已完成"),
+    el("div", { class: "echo-grid" }, questions.map((q) => el("article", { class: "echo-tile" }, [
+      el("span", { class: "seal mini" }, echoSealChar(q, key)),
+      el("div", { class: "echo-tile-body" }, [
+        el("p", { class: "eh" }, `${displayQuestionId(q.id)} · ${q.title}`),
+        q.echo ? renderEcho(q.echo) : el("p", { class: "message" }, "已完成"),
+      ]),
     ]))),
   ]);
+}
+
+function echoSealChar(q, key) {
+  if (q.echo?.highlight) return q.echo.highlight;
+  return key === "bonus" ? "枝" : "声";
 }
 
 function showEchoAnimation(echo, qid) {
@@ -629,16 +680,15 @@ function showEchoAnimation(echo, qid) {
 
 function renderEchoAnimation() {
   if (!echoAnimation) return null;
-  const isMain = (state.main_ids || []).includes(echoAnimation.qid);
+  const highlight = echoAnimation.echo.highlight;
   return el("div", { class: "paper-echo-overlay" }, [
     el("div", { class: "paper-sheet" }, [
+      el("div", { class: "wrinkle", "aria-hidden": "true" }),
       el("div", { class: "echo-stamp-feedback" }, [
-        el("span", {}, "收到一条回声"),
-        isMain && echoAnimation.echo.highlight
-          ? el("span", { class: "stamp-char" }, echoAnimation.echo.highlight)
-          : null,
+        el("p", { class: "cap" }, "收 到 一 条 回 声"),
+        highlight ? el("span", { class: "seal seal-lg" }, highlight) : null,
+        renderEcho(echoAnimation.echo),
       ]),
-      renderEcho(echoAnimation.echo),
       el("p", { class: "paper-note" }, "纸团慢慢展开，楼里的声音浮了出来。"),
       el("button", { class: "btn", type: "button", onclick: collectEchoAnimation }, "收入百宝箱"),
     ]),
@@ -646,6 +696,15 @@ function renderEchoAnimation() {
 }
 
 function collectEchoAnimation() {
+  const sheet = $(".paper-echo-overlay .paper-sheet");
+  if (sheet && !sheet.classList.contains("crumple")) {
+    sheet.classList.add("crumple");
+    setTimeout(() => {
+      echoAnimation = null;
+      renderProject();
+    }, 680);
+    return;
+  }
   echoAnimation = null;
   renderProject();
 }
@@ -695,18 +754,49 @@ function renderCyberGiftModal() {
   if (!cyberGiftModal) return null;
   const payload = cyberGiftModal.payload || {};
   return el("div", { class: "modal-overlay cyber-gift-overlay" }, [
+    el("div", { class: "fw-layer", "aria-hidden": "true" }),
     el("div", { class: "modal-panel cyber-gift-panel" }, [
-      el("div", { class: "fireworks", "aria-hidden": "true" }, [
-        el("span", {}),
-        el("span", {}),
-        el("span", {}),
-      ]),
-      el("p", { class: "badge done" }, "赛博礼物"),
+      el("p", { class: "badge cg-badge" }, "赛博礼物"),
       el("h2", {}, payload.title || "赛博礼物已送达"),
       el("p", {}, payload.message || "谢谢你一起完成这趟楼里的旅程，愿今晚的光也照向你的下一程。"),
       el("button", { class: "btn", type: "button", onclick: collectCyberGift }, "收下这份祝福"),
     ]),
   ]);
+}
+
+function launchFireworks(layer) {
+  if (!layer) return;
+  layer.replaceChildren();
+  const colors = ["#37cdbb", "#c79a52", "#19a394", "#ecd9ad"];
+  const width = layer.clientWidth || 320;
+  const height = layer.clientHeight || 480;
+  for (let burst = 0; burst < 5; burst += 1) {
+    setTimeout(() => {
+      fireworkBurst(
+        layer,
+        width * (0.18 + 0.64 * Math.random()),
+        height * (0.2 + 0.34 * Math.random()),
+        colors[burst % colors.length]
+      );
+    }, burst * 380);
+  }
+}
+
+function fireworkBurst(layer, cx, cy, color) {
+  const total = 26;
+  for (let i = 0; i < total; i += 1) {
+    const angle = (i / total) * Math.PI * 2 + Math.random() * 0.2;
+    const distance = 46 + Math.random() * 64;
+    const dot = el("span", { class: "fw-dot" });
+    dot.style.left = `${cx}px`;
+    dot.style.top = `${cy}px`;
+    dot.style.color = color;
+    dot.style.setProperty("--tx", `${(Math.cos(angle) * distance).toFixed(1)}px`);
+    dot.style.setProperty("--ty", `${(Math.sin(angle) * distance + 38).toFixed(1)}px`);
+    dot.style.animationDelay = `${Math.round(Math.random() * 70)}ms`;
+    layer.appendChild(dot);
+    setTimeout(() => dot.remove(), 1400);
+  }
 }
 
 async function makeDecision(action) {
@@ -975,9 +1065,16 @@ function renderQuestionSection(title, description, questions) {
 }
 
 function renderQuestionCard(q) {
-  const cardClass = ["question-card", q.kind === "bonus" ? "branch-card" : "", q.completed ? "complete" : "", q.locked ? "locked" : ""].filter(Boolean).join(" ");
-  const badgeClass = q.completed ? "badge done" : q.kind === "bonus" ? "badge bonus" : "badge main";
   const message = messages.get(q.id);
+  const hasError = message?.type === "error";
+  const cardClass = [
+    "question-card",
+    q.kind === "bonus" ? "branch-card" : "",
+    q.completed ? "complete" : "",
+    q.locked ? "locked" : "",
+    hasError ? "err" : "",
+  ].filter(Boolean).join(" ");
+  const badgeClass = q.completed ? "badge done" : q.kind === "bonus" ? "badge bonus" : "badge main";
   const body = [
     el("div", { class: "question-title-row" }, [
       el("div", {}, [
@@ -997,7 +1094,7 @@ function renderQuestionCard(q) {
     body.push(
       el("form", { class: "form-row", dataset: { qid: q.id }, onsubmit: onSubmitAnswer }, [
         el("input", {
-          class: "answer-input",
+          class: `answer-input${hasError ? " err" : ""}`,
           name: "answer",
           autocomplete: "off",
           placeholder: `答案格式：${q.answer_format}`,
@@ -1005,7 +1102,7 @@ function renderQuestionCard(q) {
           value: draftAnswers.get(q.id) || "",
           oninput: (event) => draftAnswers.set(q.id, event.currentTarget.value),
         }),
-        el("button", { class: "btn submit-btn", type: "submit", dataset: { qid: q.id } }, submitButtonText()),
+        el("button", { class: `btn submit-btn${q.kind === "final" ? " gold" : ""}`, type: "submit", dataset: { qid: q.id } }, submitButtonText()),
       ])
     );
   }
@@ -1046,19 +1143,34 @@ function renderQuestionImage(image) {
   ]);
 }
 
-function openImageModal(image) {
+function openImageModal(image, gallery = null, index = 0) {
   imageModal = image;
+  imageGallery = gallery && gallery.length > 1 ? gallery : null;
+  imageGalleryIndex = index;
   imageZoom = { scale: 1, x: 0, y: 0 };
   imagePointers = new Map();
   imageGesture = null;
   imageMouseStage = null;
-  renderProject();
+  renderProject({ reload: false, preserveScroll: true });
+}
+
+function showGalleryImage(delta) {
+  if (!imageGallery) return;
+  const count = imageGallery.length;
+  imageGalleryIndex = (imageGalleryIndex + delta + count) % count;
+  imageModal = imageGallery[imageGalleryIndex];
+  imageZoom = { scale: 1, x: 0, y: 0 };
+  imageGesture = null;
+  imageMouseStage = null;
+  renderProject({ reload: false, preserveScroll: true });
 }
 
 function closeImageModal(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
   imageModal = null;
+  imageGallery = null;
+  imageGalleryIndex = 0;
   imagePointers = new Map();
   imageGesture = null;
   imageMouseStage = null;
@@ -1103,6 +1215,13 @@ function renderImageModal() {
           style: imageZoomStyle(),
         }),
       ]),
+      imageGallery
+        ? el("div", { class: "image-gallery-bar" }, [
+            el("button", { class: "btn secondary", type: "button", onclick: () => showGalleryImage(-1) }, "‹ 上一页"),
+            el("span", { class: "image-page-indicator" }, `${imageGalleryIndex + 1} / ${imageGallery.length}`),
+            el("button", { class: "btn secondary", type: "button", onclick: () => showGalleryImage(1) }, "下一页 ›"),
+          ])
+        : null,
       imageModal.caption ? el("p", { class: "small" }, imageModal.caption) : null,
     ]),
   ]);
@@ -1368,6 +1487,7 @@ function updateCooldownUi() {
   const status = $("#cooldownStatus");
   if (status) {
     status.textContent = cooldownStatusText();
+    status.classList.toggle("active", cooldownRemaining > 0);
   }
   document.querySelectorAll(".submit-btn").forEach((button) => {
     button.disabled = cooldownRemaining > 0;
@@ -1614,27 +1734,35 @@ async function onRedeem(event) {
 
 function renderAwardDetails(award, redeem) {
   if (!award) return el("div");
-  const needsEligibilityCheck = adminRedeemNotice?.needsEligibilityCheck && redeem && !redeem.redeemed;
-  return el("div", { class: "award-details" }, [
+  const done = !!(redeem && (redeem.redeemed || redeem.cyber_gift_sent));
+  const needsEligibilityCheck = adminRedeemNotice?.needsEligibilityCheck && redeem && !done;
+  const children = [
     award.student_id ? el("p", {}, `学号：${award.student_id}`) : null,
     award.phone ? el("p", {}, `手机号：${award.phone}`) : null,
     el("p", {}, `参与者：${award.participant_id}`),
     el("p", {}, `完成题目：${award.completed_count} 题（主线 ${award.main_completed}/6，旁枝 ${award.bonus_completed}/3，终章${award.final_complete ? "已完成" : "未完成"}）`),
     el("p", {}, `奖项等级：${award.award_level}`),
     award.lottery_draws_remaining ? el("p", { class: "message error" }, `还有 ${award.lottery_draws_remaining} 次抽奖机会未使用。`) : null,
-    redeem?.redeemed_by ? el("p", {}, `核销人：${redeem.redeemed_by}`) : null,
-    redeem?.redeemed_at ? el("p", { class: "small" }, `核销时间：${formatTime(redeem.redeemed_at)}`) : null,
-    redeem?.cyber_gift_sent ? el("p", { class: "message ok" }, `赛博礼物已发送：${formatTime(redeem.cyber_gift_at)}${redeem.cyber_gift_by ? `，${redeem.cyber_gift_by}` : ""}`) : null,
-    needsEligibilityCheck
-      ? el("div", { class: "cta-row eligibility-actions" }, [
-          el("button", { class: "btn", type: "button", onclick: () => onConfirmGraduateRedeem(redeem.code) }, "确认为 26 届毕业生，核销实体礼物"),
-          el("button", { class: "btn secondary", type: "button", onclick: () => onSendCyberGift(redeem.code) }, "不是 26 届，发送赛博礼物"),
-        ])
-      : null,
-    redeem?.redeemed
-      ? el("button", { class: "btn secondary", type: "button", onclick: () => onUnredeem(redeem.code) }, "撤回核销状态")
-      : null,
-  ]);
+  ];
+  if (done) {
+    children.push(el("p", { class: "redeem-alert lead" }, "已核销 · 礼物已发送"));
+    if (redeem.redeemed) {
+      children.push(el("p", { class: "redeem-alert" }, `实体礼物已核销：${formatTime(redeem.redeemed_at)}${redeem.redeemed_by ? `，${redeem.redeemed_by}` : ""}`));
+    }
+    if (redeem.cyber_gift_sent) {
+      children.push(el("p", { class: "redeem-alert" }, `赛博礼物已发送：${formatTime(redeem.cyber_gift_at)}${redeem.cyber_gift_by ? `，${redeem.cyber_gift_by}` : ""}`));
+    }
+    children.push(el("div", { class: "cta-row eligibility-actions" }, [
+      el("button", { class: "btn secondary", type: "button", onclick: () => onUnredeem(redeem.code) }, "撤销核销"),
+    ]));
+  } else if (needsEligibilityCheck) {
+    children.push(el("p", { class: "redeem-confirm-q" }, "请确认该参与者是否为 26 届毕业生："));
+    children.push(el("div", { class: "cta-row eligibility-actions" }, [
+      el("button", { class: "btn", type: "button", onclick: () => onConfirmGraduateRedeem(redeem.code) }, "是 · 核销并发实体礼物"),
+      el("button", { class: "btn secondary", type: "button", onclick: () => onSendCyberGift(redeem.code) }, "不是 · 核销并发赛博礼物"),
+    ]));
+  }
+  return el("div", { class: "award-details" }, children.filter(Boolean));
 }
 
 async function onConfirmGraduateRedeem(code) {
@@ -1745,6 +1873,11 @@ function route() {
 }
 
 document.addEventListener("keydown", (event) => {
+  if (imageModal && imageGallery && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+    event.preventDefault();
+    showGalleryImage(event.key === "ArrowLeft" ? -1 : 1);
+    return;
+  }
   if (event.key !== "Escape") return;
   if (imageModal) {
     closeImageModal(event);

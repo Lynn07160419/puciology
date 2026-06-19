@@ -1716,6 +1716,13 @@ def redeem_code(code, redeemed_by="", note="", db_path=DB_PATH):
                 "redeem": serialize_redeem(row, award=details, lottery=lottery),
                 "award": details,
             }
+        if row["cyber_gift_at"]:
+            return {
+                "ok": False,
+                "message": "该参与者已发送赛博礼物，如需改发实体礼物请先撤销核销。",
+                "redeem": serialize_redeem(row, award=details, lottery=lottery),
+                "award": details,
+            }
         if details["lottery_draws_remaining"] > 0:
             return {
                 "ok": False,
@@ -1766,10 +1773,10 @@ def preview_redeem_code(code, db_path=DB_PATH):
                 "redeem": serialize_redeem(row, award=details, lottery=lottery),
                 "award": details,
             }
-        if row["redeemed_at"]:
+        if row["redeemed_at"] or row["cyber_gift_at"]:
             return {
                 "ok": False,
-                "message": "该参与者此前已核销",
+                "message": "该参与者已核销，礼物已发送。",
                 "redeem": serialize_redeem(row, award=details, lottery=lottery),
                 "award": details,
             }
@@ -1841,7 +1848,7 @@ def unredeem_code(code, db_path=DB_PATH):
         progress = progress_map(con, row["participant_id"])
         lottery = public_lottery_state(con, row["participant_id"], progress)
         details = participant_award_details(con, row["participant_id"], progress=progress, lottery=lottery)
-        if not row["redeemed_at"]:
+        if not row["redeemed_at"] and not row["cyber_gift_at"]:
             return {
                 "ok": False,
                 "message": "该兑奖码当前未核销。",
@@ -1851,7 +1858,8 @@ def unredeem_code(code, db_path=DB_PATH):
         con.execute(
             """
             UPDATE redeem_codes
-            SET redeemed_at = NULL, redeemed_by = NULL, note = NULL
+            SET redeemed_at = NULL, redeemed_by = NULL, note = NULL,
+                cyber_gift_at = NULL, cyber_gift_by = NULL
             WHERE code = ?
             """,
             (code,),
@@ -1859,7 +1867,7 @@ def unredeem_code(code, db_path=DB_PATH):
         row = con.execute("SELECT * FROM redeem_codes WHERE code = ?", (code,)).fetchone()
         return {
             "ok": True,
-            "message": "已撤回核销状态。",
+            "message": "已撤销核销，可重新核销并发放礼物。",
             "redeem": serialize_redeem(row, award=details, lottery=lottery),
             "award": details,
         }
