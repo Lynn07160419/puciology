@@ -6,7 +6,7 @@ const PHONE_KEY = "orientation.phone";
 const PARTICIPANT_KIND_KEY = "orientation.participantKind";
 const ADMIN_TOKEN_KEY = "orientation.adminToken";
 const ADMIN_NICKNAME_KEY = "orientation.adminNickname";
-const SHOW_TEST_ENTRY = true;
+const SHOW_TEST_ENTRY = false;
 
 let participant = null;
 let state = null;
@@ -349,7 +349,7 @@ async function renderProject(options = {}) {
     requestAnimationFrame(() => window.scrollTo(0, restoreScrollY));
   }
   if (cyberGiftModal) {
-    requestAnimationFrame(() => launchFireworks($(".cyber-gift-overlay .fw-layer")));
+    requestAnimationFrame(() => initCyberGiftScene());
   }
   if (ticketBurstPending) {
     ticketBurstPending = false;
@@ -654,6 +654,7 @@ function renderCompletedPanel() {
         ? el("button", { class: "btn secondary", type: "button", onclick: restartAsNewParticipant }, "测试人员重新开始一次")
         : el("button", { class: "btn secondary", type: "button", onclick: logoutParticipant }, "退出登录"),
     ]),
+    el("p", { class: "site-credit" }, "网站设计 · Lynn WishingCat"),
   ]);
 }
 
@@ -807,6 +808,7 @@ async function checkParticipantEvents() {
 
 async function collectCyberGift() {
   const eventId = cyberGiftModal?.id;
+  stopCyberGiftScene();
   cyberGiftModal = null;
   if (eventId && participant?.id) {
     try {
@@ -824,34 +826,309 @@ async function collectCyberGift() {
 function renderCyberGiftModal() {
   if (!cyberGiftModal) return null;
   const payload = cyberGiftModal.payload || {};
-  return el("div", { class: "modal-overlay cyber-gift-overlay" }, [
-    el("div", { class: "fw-layer", "aria-hidden": "true" }),
-    el("div", { class: "modal-panel cyber-gift-panel" }, [
-      el("p", { class: "badge cg-badge" }, "赛博礼物"),
-      el("h2", {}, payload.title || "赛博礼物已送达"),
-      el("p", {}, payload.message || "谢谢你一起完成这趟楼里的旅程，愿今晚的光也照向你的下一程。"),
-      el("button", { class: "btn", type: "button", onclick: collectCyberGift }, "收下这份祝福"),
-    ]),
-  ]);
+  const title = payload.title || "赛博礼物已送达";
+  // Blessing shown on the ticket — three readable lines.
+  const lines = ["谢谢你一起完成这趟楼里的旅程", "愿今晚的歌声，", "也能带给你前程似锦的祝福"];
+  const overlay = el("div", { class: "modal-overlay cyber-gift-overlay" });
+  overlay.innerHTML = `
+    <canvas class="cg-canvas" aria-hidden="true"></canvas>
+    <div class="cg-shell">
+      <div class="cg-stage" data-cg-stage>
+        <div class="cg-floor"></div>
+
+        <div class="cg-box layer-back">
+          <svg viewBox="0 0 230 210" aria-hidden="true">
+            <defs>
+              <linearGradient id="cgInterior" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#063b35"/><stop offset="1" stop-color="#0a4f47"/>
+              </linearGradient>
+              <linearGradient id="cgBoxTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1aa697"/><stop offset="1" stop-color="#0e6f63"/>
+              </linearGradient>
+            </defs>
+            <path d="M18,78 L115,52 L212,78 L115,104 Z" fill="url(#cgBoxTop)"/>
+            <path d="M30,80 L115,60 L200,80 L115,100 Z" fill="url(#cgInterior)"/>
+          </svg>
+        </div>
+
+        <img class="cg-sheep" data-cg-sheep src="/static/assets/mascot-sheep.png" alt="社会学系吉祥物·小羊"/>
+
+        <svg class="cg-ticket" data-cg-ticket viewBox="0 0 300 176" role="img" aria-label="${title}：${lines.join("")}">
+          <defs>
+            <linearGradient id="cgPaper" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fdfaf2"/><stop offset="1" stop-color="#f1e7cf"/>
+            </linearGradient>
+            <filter id="cgPaperTex" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/>
+              <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .05 0"/>
+              <feComposite operator="over" in2="SourceGraphic"/>
+            </filter>
+            <filter id="cgTicketShadow" x="-20%" y="-20%" width="140%" height="150%">
+              <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.30"/>
+            </filter>
+            <path id="cgTicketShape" d="M14,8 H286 a6,6 0 0 1 6,6 V74 a11,11 0 0 0 0,30 V162 a6,6 0 0 1 -6,6 H14 a6,6 0 0 1 -6,-6 V104 a11,11 0 0 0 0,-30 V14 a6,6 0 0 1 6,-6 Z"/>
+          </defs>
+          <g filter="url(#cgTicketShadow)">
+            <use href="#cgTicketShape" fill="url(#cgPaper)"/>
+            <use href="#cgTicketShape" fill="url(#cgPaper)" filter="url(#cgPaperTex)"/>
+            <use href="#cgTicketShape" fill="none" stroke="#d8c79b" stroke-width="1.4"/>
+          </g>
+          <use href="#cgTicketShape" fill="none" stroke="#fff" stroke-width="1" opacity="0.45" transform="scale(.99)" transform-origin="150 88"/>
+          <line x1="64" y1="14" x2="64" y2="162" stroke="#c79a52" stroke-width="1.6" stroke-dasharray="3 4"/>
+          <circle cx="64" cy="14" r="3.2" fill="#07221f"/>
+          <circle cx="64" cy="162" r="3.2" fill="#07221f"/>
+          <text x="38" y="88" fill="#b88a3e" font-size="15" font-weight="700" text-anchor="middle" transform="rotate(-90 38 88)" letter-spacing="4" font-family="var(--serif)">社系晚会</text>
+          <text x="51" y="138" fill="#caa45c" font-size="10" text-anchor="middle" transform="rotate(-90 51 136)" letter-spacing="1">ADMIT ONE</text>
+          <text x="38" y="36" fill="#c79a52" font-size="13" text-anchor="middle">✦</text>
+          <text x="180" y="40" fill="#138a7d" font-size="11" text-anchor="middle" letter-spacing="5" font-family="var(--serif)">赛 博 礼 物</text>
+          <text x="180" y="71" fill="#163029" font-size="14.5" text-anchor="middle" font-family="var(--serif)">${lines[0]}</text>
+          <text x="180" y="96" fill="#163029" font-size="14.5" text-anchor="middle" font-family="var(--serif)">${lines[1]}</text>
+          <text x="180" y="120" fill="#163029" font-size="14.5" text-anchor="middle" font-family="var(--serif)">${lines[2]}</text>
+          <text x="180" y="152" fill="#9c8049" font-size="10.5" text-anchor="middle" letter-spacing="2" font-family="var(--serif)">— 社会学系毕业晚会 —</text>
+        </svg>
+
+        <div class="cg-box layer-front">
+          <svg viewBox="0 0 230 210" aria-hidden="true">
+            <defs>
+              <linearGradient id="cgBoxFront" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#159384"/><stop offset="1" stop-color="#0c5f55"/>
+              </linearGradient>
+              <linearGradient id="cgBoxSide" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#0b524a"/><stop offset="1" stop-color="#0a4942"/>
+              </linearGradient>
+              <linearGradient id="cgRibbonV" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#d8aa5e"/><stop offset=".5" stop-color="#f0d089"/><stop offset="1" stop-color="#c2913f"/>
+              </linearGradient>
+            </defs>
+            <g class="cg-box-body">
+              <path d="M30,80 L115,100 L115,196 L30,176 Z" fill="url(#cgBoxSide)"/>
+              <path d="M115,100 L200,80 L200,176 L115,196 Z" fill="url(#cgBoxFront)"/>
+              <path d="M122,104 L150,98 L150,188 L122,192 Z" fill="#ffffff" opacity="0.06"/>
+              <path d="M150,95 L168,91 L168,187 L150,191 Z" fill="url(#cgRibbonV)"/>
+              <path d="M150,95 L150,191 L141,193 L141,97 Z" fill="#b9852f"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="cg-box layer-lid">
+          <svg viewBox="0 0 230 210" aria-hidden="true">
+            <defs>
+              <linearGradient id="cgLidTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1cab9b"/><stop offset="1" stop-color="#127a6d"/>
+              </linearGradient>
+              <linearGradient id="cgLidSide" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#10796c"/><stop offset="1" stop-color="#0c5f55"/>
+              </linearGradient>
+              <radialGradient id="cgBow" cx="0.4" cy="0.35" r="0.8">
+                <stop offset="0" stop-color="#f5d791"/><stop offset="1" stop-color="#c4933f"/>
+              </radialGradient>
+            </defs>
+            <g class="cg-lid">
+              <path d="M18,70 L115,44 L212,70 L115,96 Z" fill="url(#cgLidTop)"/>
+              <path d="M18,70 L115,96 L115,118 L18,92 Z" fill="url(#cgLidSide)"/>
+              <path d="M115,96 L212,70 L212,92 L115,118 Z" fill="#0e6f63"/>
+              <path d="M150,55 L168,59 L130,113 L113,109 Z" fill="#d8aa5e" opacity="0.9"/>
+              <path d="M100,57 L118,53 L150,107 L132,111 Z" fill="#e7c373" opacity="0.85"/>
+              <g class="cg-bow">
+                <path d="M115,52 C92,30 60,40 74,62 C84,76 108,66 115,58 Z" fill="url(#cgBow)"/>
+                <path d="M115,52 C138,30 170,40 156,62 C146,76 122,66 115,58 Z" fill="url(#cgBow)"/>
+                <path d="M115,52 C100,40 96,44 100,58 M115,52 C130,40 134,44 130,58" stroke="#a9782e" stroke-width="1.4" fill="none" opacity="0.6"/>
+                <ellipse cx="115" cy="56" rx="10" ry="9" fill="#caa24f"/>
+                <ellipse cx="115" cy="54" rx="6" ry="5" fill="#f0d089"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <p class="cg-badge-line"><span class="badge cg-badge">赛博礼物</span></p>
+      <div class="cg-actions">
+        <button class="btn cg-collect" type="button" data-cg-collect>收下这份祝福</button>
+        <button class="btn secondary cg-replay" type="button" data-cg-replay>重新播放</button>
+      </div>
+    </div>`;
+  overlay.querySelector("[data-cg-collect]").addEventListener("click", collectCyberGift);
+  overlay.querySelector("[data-cg-replay]").addEventListener("click", () => cgScene && cgScene.replay());
+  return overlay;
 }
 
-function launchFireworks(layer) {
-  if (!layer) return;
-  layer.replaceChildren();
-  const colors = ["#37cdbb", "#c79a52", "#19a394", "#ecd9ad"];
-  const width = layer.clientWidth || 320;
-  const height = layer.clientHeight || 480;
-  for (let burst = 0; burst < 5; burst += 1) {
-    setTimeout(() => {
-      fireworkBurst(
-        layer,
-        width * (0.18 + 0.64 * Math.random()),
-        height * (0.2 + 0.34 * Math.random()),
-        colors[burst % colors.length]
-      );
-    }, burst * 380);
+/* ---- cyber-gift scene: Canvas firework/confetti engine + open-box choreography ---- */
+let cgScene = null;
+
+function initCyberGiftScene() {
+  stopCyberGiftScene();
+  const overlay = $(".cyber-gift-overlay");
+  if (!overlay) return;
+  const canvas = overlay.querySelector(".cg-canvas");
+  const stage = overlay.querySelector("[data-cg-stage]");
+  const sheep = overlay.querySelector("[data-cg-sheep]");
+  const ticket = overlay.querySelector("[data-cg-ticket]");
+  if (!canvas || !stage) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fx = createCyberFX(canvas, reduce);
+  let timers = [];
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const reflow = (node) => { if (!node) return; const a = node.style.animation; node.style.animation = "none"; void node.offsetWidth; node.style.animation = a || ""; };
+
+  function play() {
+    clearTimers();
+    stage.classList.remove("cg-opened");
+    if (sheep) sheep.classList.remove("settled");
+    if (ticket) ticket.classList.remove("settled");
+    stage.querySelectorAll(".cg-box-body, .cg-lid, .cg-bow, .cg-floor").forEach(reflow);
+    reflow(sheep); reflow(ticket);
+    fx.start();
+    if (!reduce) {
+      at(880, () => { fx.confetti(); fx.burstAt(window.innerWidth / 2, window.innerHeight / 2 - 30); });
+      at(1180, () => fx.confetti());
+    }
+    at(1450, () => stage.classList.add("cg-opened"));
+    at(2900, () => { if (sheep) sheep.classList.add("settled"); if (ticket) ticket.classList.add("settled"); });
   }
+  cgScene = { play, replay: play, stop() { clearTimers(); fx.stop(); } };
+  requestAnimationFrame(play);
 }
+
+function stopCyberGiftScene() {
+  if (cgScene) { cgScene.stop(); cgScene = null; }
+}
+
+function createCyberFX(canvas, reduce) {
+  const ctx = canvas.getContext("2d");
+  const PALETTE = ["#ffffff", "#ffe9b0", "#f4c45e", "#c79a52", "#37cdbb", "#5fe0cf", "#7ff0dd"];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (a) => a[(Math.random() * a.length) | 0];
+  const toRgb = (h) => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  // Mobile GPUs are fill-rate bound: smaller backbuffer + fewer additive draws + a finite show.
+  const lite = (window.matchMedia && window.matchMedia("(pointer: coarse)").matches)
+    || (window.matchMedia && window.matchMedia("(max-width: 760px)").matches)
+    || (navigator.hardwareConcurrency || 8) <= 6;
+  const CFG = lite
+    ? { dpr: 1.3, burst: [150, 270], extra: 200, conf: 80, maxSparks: 850, spawnGap: [46, 78], spawnMs: 3200 }
+    : { dpr: 2.0, burst: [300, 600], extra: 420, conf: 130, maxSparks: 2400, spawnGap: [34, 64], spawnMs: 4200 };
+  let W = 0, H = 0, DPR = 1, sparks = [], rockets = [], confetti = [], running = false, raf = 0, rocketTimer = 0, spawnDeadline = 0;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, CFG.dpr);
+    W = canvas.clientWidth || window.innerWidth;
+    H = canvas.clientHeight || window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function Spark(x, y, color, opt) {
+    opt = opt || {};
+    const a = rnd(0, Math.PI * 2);
+    const sp = opt.speed != null ? opt.speed : (2.2 + Math.pow(Math.random(), 0.5) * 7.0);
+    this.x = x; this.y = y; this.px = x; this.py = y;
+    this.vx = Math.cos(a) * sp; this.vy = Math.sin(a) * sp;
+    this.rgb = toRgb(color); this.life = 1;
+    this.decay = rnd(0.012, 0.022) * (opt.fast ? 1.8 : 1);
+    this.grav = 0.026; this.drag = 0.986;
+    this.canSecondary = opt.secondary !== false && Math.random() < 0.08;
+    this.size = rnd(0.8, 1.6);
+  }
+  Spark.prototype.step = function () {
+    this.px = this.x; this.py = this.y;
+    this.vx *= this.drag; this.vy = this.vy * this.drag + this.grav;
+    this.x += this.vx; this.y += this.vy; this.life -= this.decay;
+    if (this.life <= 0 && this.canSecondary) {
+      this.canSecondary = false;
+      for (let i = 0; i < (rnd(5, 9) | 0); i += 1) sparks.push(new Spark(this.x, this.y, pick(PALETTE), { speed: rnd(0.6, 2.2), fast: true, secondary: false }));
+    }
+  };
+  Spark.prototype.draw = function () {
+    if (this.life <= 0) return;
+    const l = this.life, rgb = this.rgb;
+    const heat = l > 0.65 ? (l - 0.65) / 0.35 : 0;
+    const cr = Math.min(255, rgb[0] + heat * 160) | 0, cg = Math.min(255, rgb[1] + heat * 160) | 0, cb = Math.min(255, rgb[2] + heat * 160) | 0;
+    const al = Math.min(1, l * 1.25);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${al})`;
+    // One round-capped stroke draws both the trail and a glowing head — half the fill cost of stroke+arc.
+    ctx.lineWidth = Math.max(1, l * 2.7 * this.size); ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(this.px, this.py); ctx.lineTo(this.x, this.y); ctx.stroke();
+  };
+
+  function Rocket() {
+    this.x = rnd(W * 0.18, W * 0.82); this.y = H + 10; this.px = this.x; this.py = this.y;
+    this.tx = this.x + rnd(-30, 30); this.ty = rnd(H * 0.12, H * 0.40);
+    this.vy = -rnd(9, 12); this.vx = (this.tx - this.x) / ((this.y - this.ty) / -this.vy);
+    this.color = pick(PALETTE); this.dead = false;
+  }
+  Rocket.prototype.step = function () {
+    this.px = this.x; this.py = this.y;
+    this.x += this.vx; this.y += this.vy; this.vy += 0.12;
+    if (this.vy >= -1.4 || this.y <= this.ty) { this.explode(); this.dead = true; }
+  };
+  Rocket.prototype.explode = function () {
+    const n = CFG.burst[0] + (Math.random() * (CFG.burst[1] - CFG.burst[0]) | 0), b1 = pick(PALETTE), b2 = pick(PALETTE);
+    for (let i = 0; i < n; i += 1) sparks.push(new Spark(this.x, this.y, Math.random() < 0.5 ? b1 : b2));
+  };
+  Rocket.prototype.draw = function () {
+    ctx.strokeStyle = this.color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(this.px, this.py); ctx.lineTo(this.x, this.y); ctx.stroke();
+  };
+
+  const CONF = ["#37cdbb", "#c79a52", "#ecd9ad", "#19a394", "#f4c45e", "#7ff0dd", "#ffffff"];
+  function Confetto(x, y) {
+    this.x = x; this.y = y;
+    const a = rnd(-Math.PI * 0.85, -Math.PI * 0.15), sp = rnd(6, 15);
+    this.vx = Math.cos(a) * sp; this.vy = Math.sin(a) * sp;
+    this.w = rnd(5, 10); this.h = rnd(7, 13);
+    this.rot = rnd(0, Math.PI * 2); this.vr = rnd(-0.3, 0.3);
+    this.color = pick(CONF); this.life = 1; this.decay = rnd(0.004, 0.008);
+    this.grav = 0.28; this.drag = 0.985; this.tilt = rnd(0, Math.PI * 2); this.vt = rnd(0.1, 0.25);
+  }
+  Confetto.prototype.step = function () {
+    this.vx *= this.drag; this.vy = this.vy * this.drag + this.grav;
+    this.x += this.vx; this.y += this.vy; this.rot += this.vr; this.tilt += this.vt; this.life -= this.decay;
+  };
+  Confetto.prototype.draw = function () {
+    if (this.life <= 0) return;
+    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rot);
+    ctx.scale(1, Math.max(0.25, Math.abs(Math.cos(this.tilt))));
+    ctx.globalAlpha = Math.min(1, this.life * 1.4); ctx.fillStyle = this.color;
+    ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h); ctx.restore();
+  };
+
+  function loop() {
+    if (!running) return;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(7,34,31,0.30)"; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+    for (const r of rockets) { r.step(); r.draw(); }
+    rockets = rockets.filter((r) => !r.dead);
+    for (const s of sparks) { s.step(); s.draw(); }
+    sparks = sparks.filter((s) => s.life > 0);
+    if (sparks.length > CFG.maxSparks) sparks.splice(0, sparks.length - CFG.maxSparks);
+    ctx.globalCompositeOperation = "source-over";
+    for (const c of confetti) { c.step(); c.draw(); }
+    confetti = confetti.filter((c) => c.life > 0 && c.y < H + 40);
+    ctx.globalAlpha = 1;
+    const spawning = !reduce && performance.now() < spawnDeadline;
+    if (spawning) {
+      rocketTimer -= 1;
+      if (rocketTimer <= 0) { rockets.push(new Rocket()); if (Math.random() < 0.4) rockets.push(new Rocket()); rocketTimer = rnd(CFG.spawnGap[0], CFG.spawnGap[1]); }
+    }
+    // Once the show is over and nothing is left on screen, stop the loop so the GPU goes idle.
+    if (!spawning && !rockets.length && !sparks.length && !confetti.length) {
+      running = false; ctx.clearRect(0, 0, W, H); return;
+    }
+    raf = requestAnimationFrame(loop);
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+  return {
+    start() { if (running) return; resize(); running = true; ctx.clearRect(0, 0, W, H); rocketTimer = 10; spawnDeadline = performance.now() + CFG.spawnMs; raf = requestAnimationFrame(loop); },
+    stop() { running = false; cancelAnimationFrame(raf); window.removeEventListener("resize", resize); },
+    confetti() { const ox = W / 2, oy = H / 2 - 6; for (let i = 0; i < CFG.conf; i += 1) confetti.push(new Confetto(ox + rnd(-26, 26), oy + rnd(-10, 10))); },
+    burstAt(px, py) { const c = pick(PALETTE); for (let i = 0; i < CFG.extra; i += 1) sparks.push(new Spark(px, py, Math.random() < 0.5 ? c : pick(PALETTE))); },
+  };
+}
+
 
 function fireworkBurst(layer, cx, cy, color) {
   const total = 26;
@@ -981,7 +1258,7 @@ async function onDrawLottery() {
   lotteryWheelRotation = 0;
   lotteryNotice = null;
   pendingLotteryResult = null;
-  renderProject({ reload: false });
+  renderProject({ reload: false, preserveScroll: true });
   try {
     const drawPromise = api(`/api/projects/${PROJECT_ID}/lottery/draw`, {
       method: "POST",
@@ -994,7 +1271,7 @@ async function onDrawLottery() {
       pendingLotteryResult.draw.draw_index
     );
     lotteryWheelAnimating = true;
-    renderProject({ reload: false });
+    renderProject({ reload: false, preserveScroll: true });
     await wait(5000);
     const result = pendingLotteryResult;
     const resultText = `抽中了${result.draw.prize_label}。`;
@@ -1003,17 +1280,17 @@ async function onDrawLottery() {
     lotterySpinning = false;
     lotteryWheelAnimating = false;
     lotteryWheelSettled = true;
-    renderProject({ reload: false });
+    renderProject({ reload: false, preserveScroll: true });
     await wait(3000);
     if (lotteryNotice?.text === resultText) {
       lotteryNotice = null;
       resetLotteryAnimation();
-      renderProject({ reload: false });
+      renderProject({ reload: false, preserveScroll: true });
     }
   } catch (error) {
     lotteryNotice = { type: "error", text: error.message };
     resetLotteryAnimation();
-    renderProject({ reload: false });
+    renderProject({ reload: false, preserveScroll: true });
   }
 }
 
